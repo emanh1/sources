@@ -1,10 +1,12 @@
 import { fanFoxSraper } from "./fanfox";
 import type { Source, SourceChaptersOutput } from "./base";
 import type { ChapterContext, MangaContext } from "src/utils/types";
+import { mangaReadScraper } from "./mangaread";
 
 export function gatherAllSources(): Array<Source> {
     return [
-        fanFoxSraper
+        fanFoxSraper,
+        mangaReadScraper
     ]
 }
 
