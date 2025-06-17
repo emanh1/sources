@@ -10,12 +10,12 @@
   "exports": {
     ".": {
       "import": {
-        "default": "./lib/index.js",
-        "types": "./lib/index.d.ts"
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
       },
       "require": {
-        "default": "./lib/index.umd.cjs",
-        "types": "./lib/index.d.ts"
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.umd.cjs"
       }
     }
   },
