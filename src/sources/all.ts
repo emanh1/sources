@@ -2,11 +2,13 @@ import type { Source, SourceChaptersOutput } from "./base";
 import type { ChapterContext, MangaContext } from "@/utils/types";
 import { mangaReadScraper } from "./mangaread";
 import { mangaDexScraper } from "./mangadex";
+import { manhuaBuddyScraper } from "./manhuabuddy";
 
 export function gatherAllSources(): Array<Source> {
     return [
         mangaReadScraper,
-        mangaDexScraper
+        mangaDexScraper,
+        manhuaBuddyScraper
     ].sort((a,b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
 
