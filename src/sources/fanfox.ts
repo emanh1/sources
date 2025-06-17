@@ -54,13 +54,12 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         return [{
             id: Number(chapterId),
             chapterNumber: number,
-            date,
-            url,
+            date: date,
+            url: baseUrl + url,
             sourceId: 'fanfox'
         } satisfies Chapter];
     });
 }
-
 
 async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
     const pages: Page[] = [];
@@ -82,18 +81,35 @@ async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
     // Now fetch each page individually to extract the image url
     for (let i = 1; i <= maxPage; i++) {
         const pageUrl = chapter.url?.replace(/(\d+)\.html/, `${i}.html`)!;
-        const pageResponse = await chapter.proxiedFetcher(pageUrl);
-        const $$ = cheerio.load(pageResponse.data);
-        // Attempt to get the image url from reader-main-img or fallback attributes
-        const imgEl = $$('.reader-main-img');
+        let pageResponse = await chapter.proxiedFetcher(pageUrl);
+        let $$ = cheerio.load(pageResponse.data);
+        let imgEl = $$('.reader-main-img');
         let imgUrl = imgEl.attr('src') || '';
         if (imgUrl.startsWith('//')) {
             imgUrl = 'https:' + imgUrl;
-        }
-        else if (imgUrl.startsWith('/')) {
+        } else if (imgUrl.startsWith('/')) {
             imgUrl = baseUrl + imgUrl;
         }
-        pages.push({ id: i - 1, url: imgUrl, chapter: chapter });
+        
+        // If it's a loading spinner, retry after a short delay
+        let attempts = 0;
+        while (imgUrl && imgUrl.toLowerCase().includes('loading') && attempts < 5) {
+            await new Promise(r => setTimeout(r, 5000)); // wait 1sec
+            pageResponse = await chapter.proxiedFetcher(pageUrl);
+            $$ = cheerio.load(pageResponse.data);
+            imgEl = $$('.reader-main-img');
+            imgUrl = imgEl.attr('src') || '';
+            if (imgUrl.startsWith('//')) {
+                imgUrl = 'https:' + imgUrl;
+            } else if (imgUrl.startsWith('/')) {
+                imgUrl = baseUrl + imgUrl;
+            }
+            attempts++;
+        }
+        
+        if (imgUrl && !imgUrl.toLowerCase().includes('loading')) {
+            pages.push({ id: i - 1, url: imgUrl, chapter });
+        }
     }
     return pages;
 }

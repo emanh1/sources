@@ -8,14 +8,26 @@ export function gatherAllSources(): Array<Source> {
     ]
 }
 
+export async function runSourceForChapters(context: MangaContext, sourceId: string) {
+    const sources = gatherAllSources();
+    const source = sources.find(s => s.id === sourceId);
+    if (!source) {
+        throw new Error(`Source with id ${sourceId} not found`);
+    } 
+    try {
+        const chapters = await source.scrapeChapters(context);
+        return chapters;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export async function runAllSourcesForChapters(context: MangaContext) {
     const sources = gatherAllSources();
-
     const results: Record<string, SourceChaptersOutput> = {};
 
     for (const src of sources) {
         if (src.disabled) continue;
-
         try {
             results[src.id] = await src.scrapeChapters(context);
         } catch (err) {
