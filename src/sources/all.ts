@@ -7,7 +7,7 @@ export function gatherAllSources(): Array<Source> {
     return [
         fanFoxSraper,
         mangaReadScraper
-    ]
+    ].sort((a,b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
 
 export async function runSourceForChapters(context: MangaContext, sourceId: string) {
