@@ -47,7 +47,7 @@ export const mangaDexScraper: Source = {
     id: 'mangadex',
     name: 'MangaDex',
     url: baseUrl,
-    rank: 50,
+    rank: 4,
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

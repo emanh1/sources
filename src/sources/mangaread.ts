@@ -89,7 +89,7 @@ export const mangaReadScraper: Source = {
     id: 'mangaread',
     name: 'MangaRead',
     url: baseUrl,
-    rank: 90,
+    rank: 1,
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

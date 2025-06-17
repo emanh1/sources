@@ -77,7 +77,7 @@ export const manhuaBuddyScraper: Source = {
     id: 'manhuabuddy',
     name: 'ManhuaBuddy',
     url: baseUrl,
-    rank: 91,
+    rank: 3,
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };
