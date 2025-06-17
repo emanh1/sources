@@ -9,6 +9,7 @@ export type Manga = {
 
 export type Chapter = {
     id: number,
+    chapterTitle?: string,
     chapterVolume?: number,
     chapterNumber?: number
     url: string,
@@ -23,6 +24,7 @@ export type Page = {
 }
 
 export type MangaContext = Manga & {
+    language?: string;
     fetcher: UseableFetcher,
     proxiedFetcher: UseableFetcher
 }

@@ -1,18 +1,31 @@
-import { gatherAllSources, runSourceForChapters } from "../lib/index";
+import { makeFetcher, gatherAllSources, makeSimpleProxyFetcher, makeStandardFetcher, runSourceForChapters } from "../src/index";
 
 // Proxy configuration
-const proxyBase = 'https://simple-proxy-pnor.onrender.com/?destination=';
+const proxyBase = 'https://simple-proxy-pnor.onrender.com';
+
+// const context = {
+//   title: "One Piece",
+//   proxiedFetcher: async (url: string) => {
+//     const proxiedUrl = proxyBase + encodeURIComponent(url);
+//     const response = await fetch(proxiedUrl);
+//     const data = await response.text();
+//     console.log("[proxiedFetcher] fetched URL:", url);
+//     return { data };
+//   },
+//   fetcher: async (url: string) => {
+//     const response = await fetch(url);
+//     const data = await response.text();
+//     console.log("[fetcher] fetched URL (direct):", url);
+//     return { data };
+//   }
+// };
 
 const context = {
   title: "One Piece",
-  proxiedFetcher: async (url: string) => {
-    const proxiedUrl = proxyBase + encodeURIComponent(url);
-    const response = await fetch(proxiedUrl);
-    const data = await response.text();
-    console.log("[proxiedFetcher] fetched URL:", url);
-    return { data };
-  }
+  proxiedFetcher: makeFetcher(makeSimpleProxyFetcher(proxyBase, fetch)),
+  fetcher: makeFetcher(makeStandardFetcher(fetch))
 };
+
 
 async function fetchPagesForChapter(sourceId: string, chapter: any) {
   const sources = gatherAllSources();
@@ -20,7 +33,7 @@ async function fetchPagesForChapter(sourceId: string, chapter: any) {
   if (!source) {
     throw new Error(`Source ${sourceId} not found.`);
   }
-  
+
   const ctx = { ...context, ...chapter };
   console.log(`[fetchPagesForChapter] Fetching pages for chapter ${chapter.chapterNumber} from source ${sourceId}`);
 
@@ -39,66 +52,102 @@ function renderSourceSelector(sources: { id: string }[]): string {
     <button id="loadSourceBtn">Load Chapters</button>
   `;
 }
+function renderTitleInputAndSourceSelector(sources: { id: string }[], defaultTitle = ''): string {
+  return `
+    <label for="titleInput"><strong>Enter Manga Title:</strong></label>
+    <input type="text" id="titleInput" value="${defaultTitle}" placeholder="One Piece" />
+    <button id="loadTitleBtn">Load Sources</button>
+
+    <div id="sourceSelectorContainer" style="margin-top: 1em; display: none;">
+      <label for="sourceSelect"><strong>Select Source:</strong></label>
+      <select id="sourceSelect">
+        ${sources.map(s => `<option value="${s.id}">${s.id}</option>`).join('')}
+      </select>
+      <button id="loadSourceBtn">Load Chapters</button>
+    </div>
+  `;
+}
 
 async function main() {
   const sources = gatherAllSources();
-
   const app = document.querySelector("#app");
+  const pagesContainer = document.querySelector("#pages");
 
-  if (!app) {
-    console.error("Missing #app element in DOM.");
+  if (!app || !pagesContainer) {
+    console.error("Missing #app or #pages element in DOM.");
     return;
   }
-  
-  // Display a picker first
-  app.innerHTML = renderSourceSelector(sources);
-  
-  const loadBtn = document.querySelector<HTMLButtonElement>("#loadSourceBtn");
 
-  if (!loadBtn) {
-    console.error("Missing #loadSourceBtn.");
+  // Initially render title input + source selector (hidden)
+  app.innerHTML = renderTitleInputAndSourceSelector(sources);
+
+  const loadTitleBtn = document.querySelector<HTMLButtonElement>("#loadTitleBtn");
+  const sourceSelectorContainer = document.querySelector<HTMLDivElement>("#sourceSelectorContainer");
+
+  if (!loadTitleBtn || !sourceSelectorContainer) {
+    console.error("Missing loadTitleBtn or sourceSelectorContainer.");
     return;
   }
-  
-  loadBtn.addEventListener("click", async () => {
-    const select = document.querySelector<HTMLSelectElement>("#sourceSelect");
 
-    if (!select) {
-      console.error("Missing #sourceSelect.");
+  loadTitleBtn.addEventListener("click", () => {
+    // Show the source selector once title is entered
+    const titleInput = document.querySelector<HTMLInputElement>("#titleInput");
+    if (!titleInput) return;
+
+    if (!titleInput.value.trim()) {
+      alert("Please enter a manga title");
       return;
     }
-    const sourceId = select.value;
 
-    await loadChaptersForSource(sourceId);
+    // Show source selector container
+    sourceSelectorContainer.style.display = "block";
   });
 
-  async function loadChaptersForSource(sourceId: string) {
-    const pagesContainer = document.querySelector("#pages");
+  const loadSourceBtn = document.querySelector<HTMLButtonElement>("#loadSourceBtn");
+  if (!loadSourceBtn) return;
 
+  loadSourceBtn.addEventListener("click", async () => {
+    const titleInput = document.querySelector<HTMLInputElement>("#titleInput");
+    const select = document.querySelector<HTMLSelectElement>("#sourceSelect");
+    if (!titleInput || !select) return;
+
+    const sourceId = select.value;
+    const mangaTitle = titleInput.value.trim();
+
+    if (!sourceId || !mangaTitle) {
+      alert("Please select a source and enter a manga title");
+      return;
+    }
+
+    // Update context with the new title
+    const newContext = {
+      ...context,
+      title: mangaTitle,
+    };
+
+    await loadChaptersForSource(sourceId, newContext);
+  });
+
+  async function loadChaptersForSource(sourceId: string, mangaContext: typeof context) {
     if (!pagesContainer) {
       console.error("Missing #pages.");
       return;
     }
-    if (!sourceId) {
-      console.error("SourceId is undefined.");
-      return;
-    }
-  
+
     let chapters;
     try {
-      chapters = await runSourceForChapters(context, sourceId);
+      chapters = await runSourceForChapters(mangaContext, sourceId);
     } catch (err: any) {
       console.error(err);
       app.innerHTML = `<p style="color: red;">Error loading chapters: ${err?.message || ''}</p>`;
       return;
     }
-  
-    if (chapters.length === 0) {
+
+    if (!chapters || chapters.length === 0) {
       app.innerHTML = "<p>No chapters found for this source</p>";
       return;
     }
-  
-    // Display chapters
+
     app.innerHTML = `
       <h1>Chapters from Source: ${sourceId}</h1>
       <p>Total chapters: ${chapters.length}</p>
@@ -111,11 +160,10 @@ async function main() {
         `).join('')}
       </ul>
     `;
-  
+
     // Bind events to chapter links
     const chapterLinks = app.querySelectorAll<HTMLAnchorElement>('a[data-source]');
-
-    chapterLinks?.forEach(link => {
+    chapterLinks.forEach(link => {
       link.addEventListener('click', async (e) => {
         e.preventDefault();
 
@@ -126,14 +174,13 @@ async function main() {
           console.error("SourceId or chapter is undefined.");
           return;
         }
-  
+
         pagesContainer.innerHTML = `<p>Loading pages for Chapter ${chapter.chapterNumber}...</p>`;
-  
+
         try {
           const pages = await fetchPagesForChapter(srcId, chapter);
-  
-          pagesContainer.innerHTML = pages.map((page) => 
-            `<img src="${page.url}" alt="Page ${page.id + 1}" style="max-width: 100%; margin-bottom: 1em;">`
+          pagesContainer.innerHTML = pages.map((page) =>
+            `<img src="${page.url}" alt="Page ${page.id}" style="max-width: 100%; margin-bottom: 1em;">`
           ).join('');
         } catch (err: any) {
           pagesContainer.innerHTML = `<p style="color: red;">Failed to load pages: ${err?.message || ''}</p>`;
@@ -143,6 +190,4 @@ async function main() {
   }
 }
 
-main().catch(err => console.error(err));
-
-
+main().catch(console.error);

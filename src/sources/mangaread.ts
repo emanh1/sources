@@ -8,7 +8,7 @@ const baseUrl = "https://www.mangaread.org/";
 async function fetchChapters(manga: MangaContext): Promise<SourceChaptersOutput> {
     const url = `${baseUrl}manga/${toSnakeCase(manga.title)}/`;
     const response = await manga.proxiedFetcher(url);
-    const $ = cheerio.load(response.data);
+    const $ = cheerio.load(response);
 
     const chapters = getChapters($);
     return chapters;
@@ -59,7 +59,7 @@ function toSnakeCase(text: string): string {
 
 async function fetchPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
     const response = await chapter.proxiedFetcher(chapter.url);
-    const $ = cheerio.load(response.data);
+    const $ = cheerio.load(response);
 
     const pages: Page[] = [];
 
