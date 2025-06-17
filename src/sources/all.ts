@@ -1,0 +1,37 @@
+import { fanFoxSraper } from "./fanfox";
+import type { Source, SourceChaptersOutput } from "./base";
+import type { ChapterContext, MangaContext } from "src/utils/types";
+
+export function gatherAllSources(): Array<Source> {
+    return [
+        fanFoxSraper
+    ]
+}
+
+export async function runAllSourcesForChapters(context: MangaContext) {
+    const sources = gatherAllSources();
+
+    const results: Record<string, SourceChaptersOutput> = {};
+
+    for (const src of sources) {
+        if (src.disabled) continue;
+
+        try {
+            results[src.id] = await src.scrapeChapters(context);
+        } catch (err) {
+            console.warn(`Error scraping chapters from ${src.id}:`, err);
+        }
+    }
+    return results;
+}
+
+export async function fetchPagesFromSource(chapterContext: ChapterContext) {
+    const sources = gatherAllSources();
+    const src = sources.find(s => s.id === chapterContext.sourceId);
+    if (!src) {
+        throw new Error(`Source ${chapterContext.sourceId} not found.`);
+    }
+    return src.scrapePagesofChapter(chapterContext);
+}
+
+

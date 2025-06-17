@@ -1,0 +1,34 @@
+import type { UseableFetcher } from "src/fetchers/types"
+
+export type Manga = {
+    malId: number,
+    title: string,
+    title_japanese?: string,
+    title_english?: string,
+}
+
+export type Chapter = {
+    id: number,
+    chapterVolume?: number,
+    chapterNumber?: number
+    url: string,
+    date?: string,
+    sourceId: string
+}
+
+export type Page = {
+    id: number,
+    chapter: Chapter
+    url: string
+}
+
+export type MangaContext = Manga & {
+    fetcher: UseableFetcher,
+    proxiedFetcher: UseableFetcher
+}
+
+export type ChapterContext = Chapter & {
+    fetcher: UseableFetcher,
+    proxiedFetcher: UseableFetcher
+    sourceId: string
+}

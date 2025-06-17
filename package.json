@@ -1,0 +1,20 @@
+{
+  "name": "@manga_web/sources",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "abort-controller": "^3.0.0",
+    "cheerio": "^1.1.0",
+    "form-data": "^4.0.3"
+  }
+}
