@@ -1,9 +1,9 @@
 import AbortController from 'abort-controller';
 
-import { makeFullUrl } from 'src/fetchers/common';
-import type { FetchLike } from 'src/fetchers/fetch';
-import { makeStandardFetcher } from 'src/fetchers/standardFetch';
-import type { Fetcher } from 'src/fetchers/types';
+import { makeFullUrl } from '@/fetchers/common';
+import type { FetchLike } from '@/fetchers/fetch';
+import { makeStandardFetcher } from '@/fetchers/standardFetch';
+import type { Fetcher } from '@/fetchers/types';
 
 const headerMap: Record<string, string> = {
   cookie: 'X-Cookie',

@@ -1,9 +1,9 @@
 import AbortController from 'abort-controller';
 
-import { serializeBody } from 'src/fetchers/body';
-import { makeFullUrl } from 'src/fetchers/common';
-import type { FetchLike, FetchReply } from 'src/fetchers/fetch';
-import type { Fetcher } from 'src/fetchers/types';
+import { serializeBody } from '@/fetchers/body';
+import { makeFullUrl } from '@/fetchers/common';
+import type { FetchLike, FetchReply } from '@/fetchers/fetch';
+import type { Fetcher } from '@/fetchers/types';
 
 function getHeaders(list: string[], res: FetchReply): Headers {
   const output = new Headers();

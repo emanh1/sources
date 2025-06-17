@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, ChapterContext, MangaContext, Page } from 'src/utils/types';
+import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
-import type { Source } from './base';
+import type { Source } from '@/sources/base';
 
 const baseUrl = "https://www.mangaread.org/";
 

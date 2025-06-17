@@ -1,4 +1,4 @@
-import { gatherAllSources, runSourceForChapters } from "../src/index";
+import { gatherAllSources, runSourceForChapters } from "../dist/index";
 
 // Proxy configuration
 const proxyBase = 'https://simple-proxy-pnor.onrender.com/?destination=';

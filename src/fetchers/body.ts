@@ -1,7 +1,7 @@
 import FormData from 'form-data';
 
-import type { FetcherOptions } from 'src/fetchers/types';
-import { isReactNative } from 'src/utils/native';
+import type { FetcherOptions } from '@/fetchers/types';
+import { isReactNative } from '@/utils/native';
 
 export interface SeralizedBody {
   headers: Record<string, string>;

@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, ChapterContext, MangaContext, Page } from 'src/utils/types';
-import type { Source, SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
+import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
 import { Element } from 'domhandler';
 
 const baseUrl = "https://fanfox.net";

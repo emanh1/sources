@@ -1,4 +1,4 @@
-import type { Chapter, ChapterContext, MangaContext, Page } from 'src/utils/types';
+import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 
 export type SourceChaptersOutput = Chapter[];
 export type SourcePagesOutput = Page[];

@@ -1,4 +1,4 @@
-import type { UseableFetcher } from "src/fetchers/types"
+import type { UseableFetcher } from "@/fetchers/types"
 
 export type Manga = {
     malId: number,

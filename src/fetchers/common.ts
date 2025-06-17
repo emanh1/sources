@@ -1,4 +1,4 @@
-import type { Fetcher, FetcherOptions, UseableFetcher } from 'src/fetchers/types';
+import type { Fetcher, FetcherOptions, UseableFetcher } from '@/fetchers/types';
 
 export type FullUrlOptions = Pick<FetcherOptions, 'query' | 'baseUrl'>;
 
