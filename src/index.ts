@@ -2,4 +2,4 @@ export type { Fetcher, DefaultedFetcherOptions, FetcherOptions, FetcherResponse 
 export { makeStandardFetcher } from 'src/fetchers/standardFetch';
 export { makeSimpleProxyFetcher } from 'src/fetchers/simpleProxy';
 
-export { runAllSourcesForChapters, fetchPagesFromSource, gatherAllSources } from 'src/sources/all';
+export { runAllSourcesForChapters, runSourceForChapters, fetchPagesFromSource, gatherAllSources } from 'src/sources/all';
