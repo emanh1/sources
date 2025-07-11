@@ -1,7 +1,7 @@
 import type { UseableFetcher } from "@/fetchers/types"
 
 export type Manga = {
-    malId: number,
+    malId?: number,
     title: string,
     title_japanese?: string,
     title_english?: string,
