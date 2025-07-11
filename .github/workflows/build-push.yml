@@ -4,6 +4,10 @@ name: Build and Push Lib
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'test/*'
+      - 'index.html'
 
 jobs:
   deploy:
