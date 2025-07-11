@@ -1,7 +1,6 @@
 import * as FormData_2 from 'form-data';
-import { SourcePagesOutput } from './base';
 
-declare type Chapter = {
+export declare type Chapter = {
     id: number;
     chapterTitle?: string;
     chapterVolume?: number;
@@ -11,9 +10,8 @@ declare type Chapter = {
     sourceId: string;
 };
 
-declare type ChapterContext = Chapter & {
-    fetcher: UseableFetcher;
-    proxiedFetcher: UseableFetcher;
+declare type ChapterContext = ScrapeContext & {
+    chapter: Chapter;
     sourceId: string;
 };
 
@@ -25,6 +23,11 @@ export declare type DefaultedFetcherOptions = {
     readHeaders: string[];
     method: 'HEAD' | 'GET' | 'POST';
     credentials?: 'include' | 'same-origin' | 'omit';
+};
+
+declare type FeatureMap = {
+    requires: Flags[];
+    disallowed: Flags[];
 };
 
 export declare type Fetcher = {
@@ -67,8 +70,6 @@ declare type FetchOps = {
     signal?: any;
 };
 
-export declare function fetchPagesFromSource(chapterContext: ChapterContext): Promise<SourcePagesOutput>;
-
 declare type FetchReply = {
     text(): Promise<string>;
     json(): Promise<any>;
@@ -79,36 +80,55 @@ declare type FetchReply = {
     status: number;
 };
 
-export declare function gatherAllSources(): Array<Source>;
+export declare type Flags = (typeof flags)[keyof typeof flags];
+
+export declare const flags: {
+    readonly CORS_ALLOWED: "cors-allowed";
+    readonly DYNAMIC_RENDER: "dynamic-render";
+};
+
+export declare function gatherAllSources(): Source[];
+
+export declare function getSources(features: FeatureMap, list: Source[]): Source[];
 
 export declare function makeFetcher(fetcher: Fetcher): UseableFetcher;
 
 export declare function makeSimpleProxyFetcher(proxyUrl: string, f: FetchLike): Fetcher;
 
+export declare function makeSources(ops: SourceMakerInput): SourceControls;
+
 export declare function makeStandardFetcher(f: FetchLike): Fetcher;
 
-declare type Manga = {
-    malId: number;
+export declare type Manga = {
+    malId?: number;
     title: string;
     title_japanese?: string;
     title_english?: string;
 };
 
-declare type MangaContext = Manga & {
+declare type MangaContext = ScrapeContext & {
+    manga: Manga;
     language?: string;
-    fetcher: UseableFetcher;
-    proxiedFetcher: UseableFetcher;
 };
 
-declare type Page = {
+export declare class NotFoundError extends Error {
+    constructor(reason?: string);
+}
+
+export declare type Page = {
     id: number;
     chapter: Chapter;
     url: string;
 };
 
-export declare function runAllSourcesForChapters(context: MangaContext): Promise<Record<string, SourceChaptersOutput>>;
+declare interface RunnerOptions {
+    manga: Manga;
+}
 
-export declare function runSourceForChapters(context: MangaContext, sourceId: string): Promise<SourceChaptersOutput>;
+declare type ScrapeContext = {
+    proxiedFetcher: UseableFetcher;
+    fetcher: UseableFetcher;
+};
 
 declare type Source = {
     id: string;
@@ -116,13 +136,44 @@ declare type Source = {
     url: string;
     rank: number;
     disabled?: boolean;
+    flags: Flags[];
     scrapeChapters: (input: MangaContext) => Promise<SourceChaptersOutput>;
-    scrapePagesofChapter: (input: ChapterContext) => Promise<SourcePagesOutput_2>;
+    scrapePagesofChapter: (input: ChapterContext) => Promise<SourcePagesOutput>;
 };
 
-declare type SourceChaptersOutput = Chapter[];
+export declare type SourceChaptersOutput = Chapter[];
 
-declare type SourcePagesOutput_2 = Page[];
+export declare interface SourceControls {
+    runAll(runnerOps: RunnerOptions): Promise<Record<string, SourceChaptersOutput>>;
+    runSourceForChapters(runnerOps: SourceRunnerOptions): Promise<SourceChaptersOutput>;
+    runSourceForPages(runnerOps: SourcePageRunnerOptions): Promise<SourcePagesOutput>;
+    listSources(): Source[];
+}
+
+export declare interface SourceMakerInput {
+    fetcher: Fetcher;
+    proxiedFetcher?: Fetcher;
+    target: Targets;
+}
+
+declare interface SourcePageRunnerOptions {
+    chapter: Chapter;
+}
+
+export declare type SourcePagesOutput = Page[];
+
+declare interface SourceRunnerOptions {
+    id: string;
+    manga: Manga;
+}
+
+export declare type Targets = (typeof targets)[keyof typeof targets];
+
+export declare const targets: {
+    readonly BROWSER: "browser";
+    readonly NATIVE: "native";
+    readonly ANY: "any";
+};
 
 declare type UseableFetcher = {
     <T = any>(url: string, ops?: FetcherOptions): Promise<T>;
