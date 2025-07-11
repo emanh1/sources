@@ -1,3 +1,4 @@
+import type { Flags } from '@/entrypoint/targets';
 import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 
 export type SourceChaptersOutput = Chapter[];
@@ -8,7 +9,8 @@ export type Source = {
     name: string,
     url: string,
     rank: number,
-    disabled?: boolean
+    disabled?: boolean,
+    flags: Flags[],
     scrapeChapters: (input: MangaContext) => Promise<SourceChaptersOutput>,
     scrapePagesofChapter: (input: ChapterContext) => Promise<SourcePagesOutput>
 }

@@ -1,5 +1,6 @@
 import type { Chapter, ChapterContext, MangaContext, Page } from "@/utils/types";
 import type { Source, SourceChaptersOutput, SourcePagesOutput } from "./base";
+import { flags } from "@/entrypoint/targets";
 
 const baseUrl = "https://api.mangadex.org"
 
@@ -48,6 +49,7 @@ export const mangaDexScraper: Source = {
     name: 'MangaDex',
     url: baseUrl,
     rank: 4,
+    flags: [flags.CORS_ALLOWED],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

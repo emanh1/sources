@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
+import { flags } from '@/entrypoint/targets';
 
 const baseUrl = "https://www.mangaread.org/";
 
@@ -90,6 +91,7 @@ export const mangaReadScraper: Source = {
     name: 'MangaRead',
     url: baseUrl,
     rank: 1,
+    flags: [flags.CORS_ALLOWED],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

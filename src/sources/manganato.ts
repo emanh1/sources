@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
+import { flags } from '@/entrypoint/targets';
 
 const baseUrl = "https://manganato.io";
 
@@ -92,6 +93,7 @@ export const manganatoScraper: Source = {
     name: 'Manganato',
     url: baseUrl,
     rank: 1,
+    flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

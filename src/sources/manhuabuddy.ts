@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
+import { flags } from '@/entrypoint/targets';
 
 const baseUrl = "https://manhuabuddy.com"
 
@@ -78,6 +79,7 @@ export const manhuaBuddyScraper: Source = {
     name: 'ManhuaBuddy',
     url: baseUrl,
     rank: 3,
+    flags: [flags.CORS_ALLOWED],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };
