@@ -1,22 +1,23 @@
-import type { Chapter, ChapterContext, MangaContext, Page } from "@/utils/types";
+import type { Chapter, Page } from "@/utils/types";
+import type { MangaContext, ChapterContext } from "@/utils/context";
 import type { Source, SourceChaptersOutput, SourcePagesOutput } from "./base";
 import { flags } from "@/entrypoint/targets";
 
 const baseUrl = "https://api.mangadex.org"
 
-async function fetchChapters(manga: MangaContext): Promise<SourceChaptersOutput> {
-    const search = await manga.fetcher('/manga', {
+async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
+    const search = await ctx.fetcher('/manga', {
         baseUrl,
         query: {
-            title: manga.title
+            title: ctx.manga.title
         }
     })
     const chapterId = search.data[0].id; //1st search is the most likely to match
-    const chaptersResponse = await manga.fetcher(`/manga/${chapterId}/feed`, {
+    const chaptersResponse = await ctx.fetcher(`/manga/${chapterId}/feed`, {
         baseUrl
     });
     const chapters = chaptersResponse.data
-        .filter((ch: any) => !manga.language || ch.attributes.translatedLanguage === manga.language)
+        .filter((ch: any) => !ctx.language || ch.attributes.translatedLanguage === ctx.language)
         .map((ch: any) => ({
             id: ch.id,
             chapterNumber: Number(ch.attributes.chapter),
@@ -30,8 +31,8 @@ async function fetchChapters(manga: MangaContext): Promise<SourceChaptersOutput>
     return chapters
 }
 
-async function fetchPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
-    const res = await chapter.fetcher(chapter.url);
+async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
+    const res = await ctx.fetcher(ctx.chapter.url);
     const base = res.baseUrl;
     const hash = res.chapter.hash;
     const files = res.chapter.data; 

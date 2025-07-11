@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
+import type { Chapter, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext } from '@/utils/context';
 import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
 import { Element } from 'domhandler';
 import { flags } from '@/entrypoint/targets';
@@ -13,9 +14,9 @@ function toSnakeCase(text: string): string {
         .replace(/^_+|_+$/g, ''); // trim leading and trailing underscores
 }
 
-async function fetchChapters(manga: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manga/${toSnakeCase(manga.title)}/`;
-    const response = await manga.proxiedFetcher(url);
+async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
+    const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}/`;
+    const response = await ctx.proxiedFetcher(url);
     const $ = cheerio.load(response.data);
     const chapters = getChapters($);
     return chapters;
@@ -62,10 +63,10 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
     });
 }
 
-async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
+async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const pages: Page[] = [];
 
-    const response = await chapter.proxiedFetcher(chapter.url);
+    const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response.data);
 
     // Get the max page count first
@@ -81,8 +82,8 @@ async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
 
     // Now fetch each page individually to extract the image url
     for (let i = 1; i <= maxPage; i++) {
-        const pageUrl = chapter.url?.replace(/(\d+)\.html/, `${i}.html`)!;
-        let pageResponse = await chapter.proxiedFetcher(pageUrl);
+        const pageUrl = ctx.chapter.url?.replace(/(\d+)\.html/, `${i}.html`)!;
+        let pageResponse = await ctx.proxiedFetcher(pageUrl);
         let $$ = cheerio.load(pageResponse.data);
         let imgEl = $$('.reader-main-img');
         let imgUrl = imgEl.attr('src') || '';
@@ -96,7 +97,7 @@ async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
         let attempts = 0;
         while (imgUrl && imgUrl.toLowerCase().includes('loading') && attempts < 5) {
             await new Promise(r => setTimeout(r, 5000)); // wait 1sec
-            pageResponse = await chapter.proxiedFetcher(pageUrl);
+            pageResponse = await ctx.proxiedFetcher(pageUrl);
             $$ = cheerio.load(pageResponse.data);
             imgEl = $$('.reader-main-img');
             imgUrl = imgEl.attr('src') || '';
@@ -109,7 +110,7 @@ async function getPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
         }
         
         if (imgUrl && !imgUrl.toLowerCase().includes('loading')) {
-            pages.push({ id: i - 1, url: imgUrl, chapter });
+            pages.push({ id: i - 1, url: imgUrl, chapter: ctx.chapter });
         }
     }
     return pages;

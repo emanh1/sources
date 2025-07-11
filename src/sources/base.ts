@@ -1,5 +1,6 @@
 import type { Flags } from '@/entrypoint/targets';
-import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
+import type { Chapter, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext } from '@/utils/context';
 
 export type SourceChaptersOutput = Chapter[];
 export type SourcePagesOutput = Page[];

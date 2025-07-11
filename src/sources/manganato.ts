@@ -1,14 +1,15 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, ChapterContext, MangaContext, Page } from '@/utils/types';
+import type { Chapter, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext } from '@/utils/context';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 
 const baseUrl = "https://manganato.io";
 
-async function fetchChapters(manga: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manga/${toSnakeCase(manga.title)}`;
-    const response = await manga.proxiedFetcher(url, {
+async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
+    const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}`;
+    const response = await ctx.proxiedFetcher(url, {
         headers: {'x-use-browser': 'true'}
     });
     const $ = cheerio.load(response);
@@ -60,8 +61,8 @@ function toSnakeCase(text: string): string {
         .replace(/^-+|-+$/g, '');
 }
 
-async function fetchPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
-    const response = await chapter.proxiedFetcher(chapter.url);
+async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
+    const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
 
     const pages: Page[] = [];
@@ -79,7 +80,7 @@ async function fetchPages(chapter: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: pageNumber,
             url: src,
-            chapter
+            chapter: ctx.chapter
         });
     });
 
@@ -92,7 +93,7 @@ export const manganatoScraper: Source = {
     id: 'manganato',
     name: 'Manganato',
     url: baseUrl,
-    rank: 1,
+    rank: 2,
     flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
