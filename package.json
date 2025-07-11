@@ -30,7 +30,7 @@
   "author": "manga_web",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/manga_web/sources/issues"
+    "url": "https://github.com/emanh1/sources/issues"
   },
   "scripts": {
     "dev": "vite",
