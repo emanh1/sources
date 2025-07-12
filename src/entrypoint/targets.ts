@@ -2,6 +2,7 @@ export const flags = {
     CORS_ALLOWED: 'cors-allowed',
     // HTML not available through cheerio
     DYNAMIC_RENDER: 'dynamic-render',
+    NEEDS_REFERER_HEADER: 'needs-referer-header'
 } as const;
 
 export type Flags = (typeof flags)[keyof typeof flags];
@@ -22,7 +23,7 @@ export type FeatureMap = {
 export const targetToFeatures: Record<Targets, FeatureMap> = {
     browser: {
         requires: [flags.CORS_ALLOWED],
-        disallowed: [flags.DYNAMIC_RENDER],
+        disallowed: [],
     },
     native: {
         requires: [],
