@@ -5,3 +5,5 @@ Fetcher code taken from https://github.com/p-stream/providers
 - MangaDex
 - MangaRead
 - ManhuaBuddy
+- MangaNato
+- MangaFox (FanFox)
