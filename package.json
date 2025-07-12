@@ -33,7 +33,7 @@
     "url": "https://github.com/emanh1/sources/issues"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "npx tsc && vite build && vite",
     "build": "npx tsc && vite build",
     "preview": "vite preview"
   },
