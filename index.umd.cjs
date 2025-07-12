@@ -67,9 +67,9 @@
   function toKebabCase(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
-  const baseUrl$5 = "https://www.mangaread.org/";
-  async function fetchChapters$5(ctx) {
-    const url = `${baseUrl$5}manga/${toKebabCase(ctx.manga.title)}/`;
+  const baseUrl$6 = "https://www.mangaread.org/";
+  async function fetchChapters$6(ctx) {
+    const url = `${baseUrl$6}manga/${toKebabCase(ctx.manga.title)}/`;
     const response = await ctx.proxiedFetcher(url);
     const $ = cheerio__namespace.load(response);
     const chapters = getChapters$3($);
@@ -98,7 +98,7 @@
       };
     }).filter(Boolean);
   }
-  async function fetchPages$4(ctx) {
+  async function fetchPages$5(ctx) {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio__namespace.load(response);
     const pages = [];
@@ -122,23 +122,23 @@
   const mangaReadScraper = {
     id: "mangaread",
     name: "MangaRead",
-    url: baseUrl$5,
+    url: baseUrl$6,
     rank: 1,
     flags: [flags.CORS_ALLOWED],
-    scrapeChapters: fetchChapters$5,
-    scrapePagesofChapter: fetchPages$4
+    scrapeChapters: fetchChapters$6,
+    scrapePagesofChapter: fetchPages$5
   };
-  const baseUrl$4 = "https://api.mangadex.org";
-  async function fetchChapters$4(ctx) {
+  const baseUrl$5 = "https://api.mangadex.org";
+  async function fetchChapters$5(ctx) {
     const search = await ctx.fetcher("/manga", {
-      baseUrl: baseUrl$4,
+      baseUrl: baseUrl$5,
       query: {
         title: ctx.manga.title
       }
     });
     const chapterId = search.data[0].id;
     const chaptersResponse = await ctx.fetcher(`/manga/${chapterId}/feed`, {
-      baseUrl: baseUrl$4
+      baseUrl: baseUrl$5
     });
     const chapters = chaptersResponse.data.filter((ch) => !ctx.language || ch.attributes.translatedLanguage === ctx.language).map((ch) => ({
       id: ch.id,
@@ -146,13 +146,13 @@
       chapterTitle: ch.attributes.title,
       chapterVolume: Number(ch.attributes.volume),
       date: ch.attributes.publishAt,
-      url: `${baseUrl$4}/at-home/server/${ch.id}`,
+      url: `${baseUrl$5}/at-home/server/${ch.id}`,
       sourceId: "mangadex"
     }));
     console.log(chapters);
     return chapters;
   }
-  async function fetchPages$3(ctx) {
+  async function fetchPages$4(ctx) {
     const res = await ctx.fetcher(ctx.chapter.url);
     const base = res.baseUrl;
     const hash = res.chapter.hash;
@@ -166,15 +166,15 @@
   const mangaDexScraper = {
     id: "mangadex",
     name: "MangaDex",
-    url: baseUrl$4,
+    url: baseUrl$5,
     rank: 4,
     flags: [flags.CORS_ALLOWED],
-    scrapeChapters: fetchChapters$4,
-    scrapePagesofChapter: fetchPages$3
+    scrapeChapters: fetchChapters$5,
+    scrapePagesofChapter: fetchPages$4
   };
-  const baseUrl$3 = "https://manhuabuddy.com";
-  async function fetchChapters$3(ctx) {
-    const url = `${baseUrl$3}/manhwa/${toKebabCase(ctx.manga.title)}/`;
+  const baseUrl$4 = "https://manhuabuddy.com";
+  async function fetchChapters$4(ctx) {
+    const url = `${baseUrl$4}/manhwa/${toKebabCase(ctx.manga.title)}/`;
     const response = await ctx.proxiedFetcher(url);
     const $ = cheerio__namespace.load(response);
     const chapters = getChapters$2($);
@@ -198,12 +198,12 @@
         id: chapterId,
         chapterNumber,
         date,
-        url: baseUrl$3 + "/" + url,
+        url: baseUrl$4 + "/" + url,
         sourceId: "manhuabuddy"
       };
     }).filter(Boolean);
   }
-  async function fetchPages$2(ctx) {
+  async function fetchPages$3(ctx) {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio__namespace.load(response);
     const pages = [];
@@ -223,15 +223,15 @@
   const manhuaBuddyScraper = {
     id: "manhuabuddy",
     name: "ManhuaBuddy",
-    url: baseUrl$3,
+    url: baseUrl$4,
     rank: 3,
     flags: [flags.CORS_ALLOWED],
-    scrapeChapters: fetchChapters$3,
-    scrapePagesofChapter: fetchPages$2
+    scrapeChapters: fetchChapters$4,
+    scrapePagesofChapter: fetchPages$3
   };
-  const baseUrl$2 = "https://manganato.io";
-  async function fetchChapters$2(ctx) {
-    const url = `${baseUrl$2}/manga/${toKebabCase(ctx.manga.title)}`;
+  const baseUrl$3 = "https://manganato.io";
+  async function fetchChapters$3(ctx) {
+    const url = `${baseUrl$3}/manga/${toKebabCase(ctx.manga.title)}`;
     const response = await ctx.proxiedFetcher(url, {
       headers: { "x-use-browser": "true" }
     });
@@ -262,7 +262,7 @@
       };
     }).filter(Boolean);
   }
-  async function fetchPages$1(ctx) {
+  async function fetchPages$2(ctx) {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio__namespace.load(response);
     const pages = [];
@@ -286,15 +286,15 @@
   const manganatoScraper = {
     id: "manganato",
     name: "Manganato",
-    url: baseUrl$2,
+    url: baseUrl$3,
     rank: 2,
     flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
-    scrapeChapters: fetchChapters$2,
-    scrapePagesofChapter: fetchPages$1
+    scrapeChapters: fetchChapters$3,
+    scrapePagesofChapter: fetchPages$2
   };
-  const baseUrl$1 = "https://fanfox.net";
-  async function fetchChapters$1(ctx) {
-    const url = `${baseUrl$1}/manga/${toSnakeCase(ctx.manga.title)}/`;
+  const baseUrl$2 = "https://fanfox.net";
+  async function fetchChapters$2(ctx) {
+    const url = `${baseUrl$2}/manga/${toSnakeCase(ctx.manga.title)}/`;
     const response = await ctx.proxiedFetcher(url);
     const $ = cheerio__namespace.load(response);
     const chapters = parseChapters($);
@@ -324,7 +324,7 @@
         id: Number(chapterId),
         chapterNumber: number,
         date,
-        url: baseUrl$1 + href,
+        url: baseUrl$2 + href,
         sourceId: "fanfox"
       }];
     });
@@ -356,7 +356,7 @@
       if (imgUrl.startsWith("//")) {
         imgUrl = "https:" + imgUrl;
       } else if (imgUrl.startsWith("/")) {
-        imgUrl = baseUrl$1 + imgUrl;
+        imgUrl = baseUrl$2 + imgUrl;
       }
       if (imgUrl && !imgUrl.toLowerCase().includes("loading")) {
         pages.push({
@@ -371,15 +371,15 @@
   const fanFoxScraper = {
     id: "fanfox",
     name: "FanFox (MangaFox)",
-    url: baseUrl$1,
+    url: baseUrl$2,
     rank: 100,
     flags: [flags.CORS_ALLOWED, flags.DYNAMIC_RENDER, flags.NEEDS_REFERER_HEADER],
-    scrapeChapters: fetchChapters$1,
+    scrapeChapters: fetchChapters$2,
     scrapePagesofChapter: getPages
   };
-  const baseUrl = "https://readmanga.cc/";
-  async function fetchChapters(ctx) {
-    const url = `${baseUrl}manga/${toKebabCase(ctx.manga.title)}/`;
+  const baseUrl$1 = "https://readmanga.cc/";
+  async function fetchChapters$1(ctx) {
+    const url = `${baseUrl$1}manga/${toKebabCase(ctx.manga.title)}/`;
     const response = await ctx.proxiedFetcher(url);
     const $ = cheerio__namespace.load(response);
     const chapters = getChapters($);
@@ -408,7 +408,7 @@
     });
     return chapters;
   }
-  async function fetchPages(ctx) {
+  async function fetchPages$1(ctx) {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio__namespace.load(response);
     const pages = [];
@@ -428,9 +428,76 @@
   const readmangaScraper = {
     id: "readmanga",
     name: "ReadManga",
-    url: baseUrl,
+    url: baseUrl$1,
     rank: 5,
     flags: [flags.CORS_ALLOWED],
+    scrapeChapters: fetchChapters$1,
+    scrapePagesofChapter: fetchPages$1
+  };
+  const baseUrl = "https://www.coffeemanga.art/";
+  async function fetchChapters(ctx) {
+    const url = `${baseUrl}manga/${toKebabCase(ctx.manga.title)}/`;
+    const response = await ctx.proxiedFetcher(url);
+    const $ = cheerio__namespace.load(response);
+    const chapters = [];
+    $(".wp-manga-chapter").each((_, el) => {
+      const $el = $(el);
+      const $a = $el.find("a");
+      const url2 = $a.attr("href") || "";
+      const titleText = $a.text().trim();
+      const date = $el.find(".chapter-release-date i").text().trim();
+      const match = titleText.match(/chapter\s*([\d.]+)/i);
+      const chapterNumber = match ? parseFloat(match[1]) : void 0;
+      const idAttr = $a.attr("data-id");
+      const chapterId = idAttr ? parseInt(idAttr, 10) : void 0;
+      if (!url2 || chapterNumber === void 0 || !chapterId) return;
+      chapters.push({
+        id: chapterId,
+        chapterNumber,
+        date,
+        url: url2,
+        sourceId: "coffeemanga"
+      });
+    });
+    return chapters;
+  }
+  async function fetchPages(ctx) {
+    const response = await ctx.proxiedFetcher(ctx.chapter.url);
+    const $ = cheerio__namespace.load(response);
+    const pages = [];
+    $("div.page-break img.wp-manga-chapter-img").each((i, el) => {
+      var _a;
+      const $img = $(el);
+      let src = (_a = $img.attr("src")) == null ? void 0 : _a.trim();
+      if (src == null ? void 0 : src.startsWith("//")) src = "https:" + src;
+      if (!src) return;
+      pages.push({
+        id: i,
+        url: src,
+        chapter: ctx.chapter
+      });
+    });
+    return pages;
+  }
+  const coffeemangaScraper = {
+    id: "coffeemanga",
+    name: "CoffeeManga",
+    url: baseUrl,
+    rank: 6,
+    flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
+    // something like this
+    // async function loadImageThroughProxy(imageUrl: string) {
+    //   const response = await fetch(`http://localhost:3000?destination=${encodeURIComponent(imageUrl)}`, {
+    //     headers: {
+    //       'X-Referer': 'https://www.coffeemanga.art/',
+    //       'X-User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'
+    //     }
+    //   });
+    //   if (!response.ok) throw new Error(`Failed to fetch image ${imageUrl}`);
+    //   const blob = await response.blob();
+    //   const imageURL = URL.createObjectURL(blob);
+    //   return imageURL;
+    // }
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
   };
@@ -441,7 +508,8 @@
       manhuaBuddyScraper,
       manganatoScraper,
       fanFoxScraper,
-      readmangaScraper
+      readmangaScraper,
+      coffeemangaScraper
     ].sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
   }
   function hasDuplicates(values) {
