@@ -4,15 +4,9 @@ import type { MangaContext, ChapterContext } from '@/utils/context';
 import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
 import { Element } from 'domhandler';
 import { flags } from '@/entrypoint/targets';
+import { toSnakeCase } from '@/utils/tocase';
 
 const baseUrl = "https://fanfox.net";
-
-function toSnakeCase(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, '');
-}
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}/`;

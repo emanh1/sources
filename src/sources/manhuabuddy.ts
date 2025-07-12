@@ -4,11 +4,12 @@ import type { MangaContext, ChapterContext } from '@/utils/context';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
+import { toKebabCase } from '@/utils/tocase';
 
 const baseUrl = "https://manhuabuddy.com"
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manhwa/${toSnakeCase(ctx.manga.title)}/`;
+    const url = `${baseUrl}/manhwa/${toKebabCase(ctx.manga.title)}/`;
     const response = await ctx.proxiedFetcher(url);
     const $ = cheerio.load(response);
 
@@ -46,13 +47,6 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
             sourceId: 'manhuabuddy'
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
-}
-
-function toSnakeCase(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
 }
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
