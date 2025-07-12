@@ -10,7 +10,8 @@ class NotFoundError extends Error {
 const flags = {
   CORS_ALLOWED: "cors-allowed",
   // HTML not available through cheerio
-  DYNAMIC_RENDER: "dynamic-render"
+  DYNAMIC_RENDER: "dynamic-render",
+  NEEDS_REFERER_HEADER: "needs-referer-header"
 };
 const targets = {
   BROWSER: "browser",
@@ -20,7 +21,7 @@ const targets = {
 const targetToFeatures = {
   browser: {
     requires: [flags.CORS_ALLOWED],
-    disallowed: [flags.DYNAMIC_RENDER]
+    disallowed: []
   },
   native: {
     requires: [],
@@ -42,9 +43,9 @@ function flagsAllowedInFeatures(features, inputFlags) {
   if (hasDisallowedFlag) return false;
   return true;
 }
-const baseUrl$3 = "https://www.mangaread.org/";
-async function fetchChapters$3(ctx) {
-  const url = `${baseUrl$3}manga/${toSnakeCase$2(ctx.manga.title)}/`;
+const baseUrl$4 = "https://www.mangaread.org/";
+async function fetchChapters$4(ctx) {
+  const url = `${baseUrl$4}manga/${toSnakeCase$3(ctx.manga.title)}/`;
   const response = await ctx.proxiedFetcher(url);
   const $ = cheerio.load(response);
   const chapters = getChapters$2($);
@@ -73,7 +74,7 @@ function getChapters$2($) {
     };
   }).filter(Boolean);
 }
-function toSnakeCase$2(text) {
+function toSnakeCase$3(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 async function fetchPages$3(ctx) {
@@ -100,23 +101,23 @@ async function fetchPages$3(ctx) {
 const mangaReadScraper = {
   id: "mangaread",
   name: "MangaRead",
-  url: baseUrl$3,
+  url: baseUrl$4,
   rank: 1,
   flags: [flags.CORS_ALLOWED],
-  scrapeChapters: fetchChapters$3,
+  scrapeChapters: fetchChapters$4,
   scrapePagesofChapter: fetchPages$3
 };
-const baseUrl$2 = "https://api.mangadex.org";
-async function fetchChapters$2(ctx) {
+const baseUrl$3 = "https://api.mangadex.org";
+async function fetchChapters$3(ctx) {
   const search = await ctx.fetcher("/manga", {
-    baseUrl: baseUrl$2,
+    baseUrl: baseUrl$3,
     query: {
       title: ctx.manga.title
     }
   });
   const chapterId = search.data[0].id;
   const chaptersResponse = await ctx.fetcher(`/manga/${chapterId}/feed`, {
-    baseUrl: baseUrl$2
+    baseUrl: baseUrl$3
   });
   const chapters = chaptersResponse.data.filter((ch) => !ctx.language || ch.attributes.translatedLanguage === ctx.language).map((ch) => ({
     id: ch.id,
@@ -124,7 +125,7 @@ async function fetchChapters$2(ctx) {
     chapterTitle: ch.attributes.title,
     chapterVolume: Number(ch.attributes.volume),
     date: ch.attributes.publishAt,
-    url: `${baseUrl$2}/at-home/server/${ch.id}`,
+    url: `${baseUrl$3}/at-home/server/${ch.id}`,
     sourceId: "mangadex"
   }));
   console.log(chapters);
@@ -144,15 +145,15 @@ async function fetchPages$2(ctx) {
 const mangaDexScraper = {
   id: "mangadex",
   name: "MangaDex",
-  url: baseUrl$2,
+  url: baseUrl$3,
   rank: 4,
   flags: [flags.CORS_ALLOWED],
-  scrapeChapters: fetchChapters$2,
+  scrapeChapters: fetchChapters$3,
   scrapePagesofChapter: fetchPages$2
 };
-const baseUrl$1 = "https://manhuabuddy.com";
-async function fetchChapters$1(ctx) {
-  const url = `${baseUrl$1}/manhwa/${toSnakeCase$1(ctx.manga.title)}/`;
+const baseUrl$2 = "https://manhuabuddy.com";
+async function fetchChapters$2(ctx) {
+  const url = `${baseUrl$2}/manhwa/${toSnakeCase$2(ctx.manga.title)}/`;
   const response = await ctx.proxiedFetcher(url);
   const $ = cheerio.load(response);
   const chapters = getChapters$1($);
@@ -176,12 +177,12 @@ function getChapters$1($) {
       id: chapterId,
       chapterNumber,
       date,
-      url: baseUrl$1 + "/" + url,
+      url: baseUrl$2 + "/" + url,
       sourceId: "manhuabuddy"
     };
   }).filter(Boolean);
 }
-function toSnakeCase$1(text) {
+function toSnakeCase$2(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 async function fetchPages$1(ctx) {
@@ -204,15 +205,15 @@ async function fetchPages$1(ctx) {
 const manhuaBuddyScraper = {
   id: "manhuabuddy",
   name: "ManhuaBuddy",
-  url: baseUrl$1,
+  url: baseUrl$2,
   rank: 3,
   flags: [flags.CORS_ALLOWED],
-  scrapeChapters: fetchChapters$1,
+  scrapeChapters: fetchChapters$2,
   scrapePagesofChapter: fetchPages$1
 };
-const baseUrl = "https://manganato.io";
-async function fetchChapters(ctx) {
-  const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}`;
+const baseUrl$1 = "https://manganato.io";
+async function fetchChapters$1(ctx) {
+  const url = `${baseUrl$1}/manga/${toSnakeCase$1(ctx.manga.title)}`;
   const response = await ctx.proxiedFetcher(url, {
     headers: { "x-use-browser": "true" }
   });
@@ -243,7 +244,7 @@ function getChapters($) {
     };
   }).filter(Boolean);
 }
-function toSnakeCase(text) {
+function toSnakeCase$1(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 async function fetchPages(ctx) {
@@ -270,18 +271,107 @@ async function fetchPages(ctx) {
 const manganatoScraper = {
   id: "manganato",
   name: "Manganato",
-  url: baseUrl,
+  url: baseUrl$1,
   rank: 2,
   flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
-  scrapeChapters: fetchChapters,
+  scrapeChapters: fetchChapters$1,
   scrapePagesofChapter: fetchPages
+};
+const baseUrl = "https://fanfox.net";
+function toSnakeCase(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+async function fetchChapters(ctx) {
+  const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}/`;
+  const response = await ctx.proxiedFetcher(url);
+  const $ = cheerio.load(response);
+  const chapters = parseChapters($);
+  return chapters;
+}
+function parseChapters($) {
+  const container = $("#chapterlist");
+  let links = [];
+  if (container.find("#list-2 ul.detail-main-list").length) {
+    links = container.find("#list-2 ul.detail-main-list li a").toArray();
+  } else if (container.find("#list-1 ul.detail-main-list").length) {
+    links = container.find("#list-1 ul.detail-main-list li a").toArray();
+  } else {
+    links = container.find(".detail-main-list ul li a").toArray();
+  }
+  return links.flatMap((el) => {
+    const $el = $(el);
+    const href = $el.attr("href");
+    if (!href) return [];
+    const chapterId = href.split("/").pop() || "";
+    const title = $el.find(".title3").text().trim();
+    const date = $el.find(".title2").text().trim();
+    const match = title.match(/Ch\.(\d+(\.\d+)?)/i) || title.match(/c(\d+(\.\d+)?)/i);
+    const number = match ? parseFloat(match[1]) : void 0;
+    if (number === void 0) return [];
+    return [{
+      id: Number(chapterId),
+      chapterNumber: number,
+      date,
+      url: baseUrl + href,
+      sourceId: "fanfox"
+    }];
+  });
+}
+async function getPages(ctx) {
+  const response = await ctx.proxiedFetcher(ctx.chapter.url, {
+    headers: {
+      "x-use-browser": "true"
+    }
+  });
+  const $ = cheerio.load(response);
+  const pages = [];
+  const pageLinks = $(".pager-list-left span a[data-page]");
+  let maxPage = 1;
+  pageLinks.each((_, el) => {
+    const n = parseInt($(el).attr("data-page") || "", 10);
+    if (!isNaN(n)) maxPage = Math.max(maxPage, n);
+  });
+  for (let i = 1; i <= maxPage; i++) {
+    const pageUrl = ctx.chapter.url.replace(/(\d+)\.html/, `${i}.html`);
+    let pageData = await ctx.proxiedFetcher(pageUrl, {
+      headers: {
+        "x-use-browser": "true"
+      }
+    });
+    let $$ = cheerio.load(pageData);
+    let imgEl = $$(".reader-main-img");
+    let imgUrl = imgEl.attr("src") || "";
+    if (imgUrl.startsWith("//")) {
+      imgUrl = "https:" + imgUrl;
+    } else if (imgUrl.startsWith("/")) {
+      imgUrl = baseUrl + imgUrl;
+    }
+    if (imgUrl && !imgUrl.toLowerCase().includes("loading")) {
+      pages.push({
+        id: i - 1,
+        url: imgUrl,
+        chapter: ctx.chapter
+      });
+    }
+  }
+  return pages;
+}
+const fanFoxScraper = {
+  id: "fanfox",
+  name: "FanFox (MangaFox)",
+  url: baseUrl,
+  rank: 100,
+  flags: [flags.CORS_ALLOWED, flags.DYNAMIC_RENDER, flags.NEEDS_REFERER_HEADER],
+  scrapeChapters: fetchChapters,
+  scrapePagesofChapter: getPages
 };
 function gatherAllSources() {
   return [
     mangaReadScraper,
     mangaDexScraper,
     manhuaBuddyScraper,
-    manganatoScraper
+    manganatoScraper,
+    fanFoxScraper
   ].sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
 function hasDuplicates(values) {

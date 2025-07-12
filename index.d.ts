@@ -85,6 +85,7 @@ export declare type Flags = (typeof flags)[keyof typeof flags];
 export declare const flags: {
     readonly CORS_ALLOWED: "cors-allowed";
     readonly DYNAMIC_RENDER: "dynamic-render";
+    readonly NEEDS_REFERER_HEADER: "needs-referer-header";
 };
 
 export declare function gatherAllSources(): Source[];
