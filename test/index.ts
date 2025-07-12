@@ -1,6 +1,14 @@
+import { sources, availableSources } from "../test/source";
+
 function render(html: string) {
-  document.body.innerHTML = html;
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = html;
+  } else {
+    console.warn('No #app container found');
+  }
 }
+
 
 function renderSourcesSelector(sources: any[], defaultTitle = "One Piece") {
   return `
@@ -30,19 +38,6 @@ function renderPages(pages: any[]) {
   return pages.map((p: any) => `<img src="${p.url}" style="max-width:100%;margin-bottom:1em;" />`).join('');
 }
 
-import { targets, makeSimpleProxyFetcher, makeSources, makeStandardFetcher } from "../lib/index";
-
-const proxyBase = 'https://simple-proxy-pnor.onrender.com';
-const fetcher = makeStandardFetcher(fetch);
-const proxiedFetcher = makeSimpleProxyFetcher(proxyBase, fetch);
-const sources = makeSources({
-  fetcher,
-  proxiedFetcher,
-  target: targets.BROWSER,
-});
-
-
-const availableSources = sources.listSources();
 
 function setupUI() {
   render(renderSourcesSelector(availableSources));
@@ -77,6 +72,7 @@ function setupUI() {
             }
             pagesDiv!.innerHTML = renderPages(pages);
           } catch (err) {
+            console.log(err);
             pagesDiv!.innerHTML = 'Failed to load pages.';
           }
         });

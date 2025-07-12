@@ -3,8 +3,7 @@ import { targets, makeSimpleProxyFetcher, makeSources, makeStandardFetcher } fro
 async function loadImageThroughProxy(imageUrl: string) {
   const response = await fetch(`http://localhost:3000?destination=${encodeURIComponent(imageUrl)}`, {
     headers: {
-      'X-Referer': 'https://fanfox.net',
-      'X-User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'
+      'X-Referer': 'https://www.coffeemanga.art/',
     }
   });
 
@@ -14,14 +13,13 @@ async function loadImageThroughProxy(imageUrl: string) {
   const imageURL = URL.createObjectURL(blob);
   return imageURL;
 }
-
 import { sources, availableSources } from './source';
 
 async function main() {
 
   const chapters = await sources.runSourceForChapters({
-    manga: { malId: 1, title: 'One Piece' },
-    id: 'fanfox',
+    manga: { malId: 1, title: 'Himouto! Umaru-chan' },
+    id: 'coffeemanga',
   });
   console.log('Chapters:', chapters);
   const latest = await sources.runSourceForPages({
