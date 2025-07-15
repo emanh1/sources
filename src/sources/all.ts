@@ -10,6 +10,7 @@ import { kunmangaScraper } from "./kunmanga";
 import { mangackScraper } from "./mangack";
 import { mangaTaroScraper } from "./mangataro";
 import { novaMangaScraper } from "./novamanga";
+import { readMangaSeriesScraper } from "./readmangaseries";
 
 export function gatherAllSources(): Source[] {
     return [
@@ -23,6 +24,7 @@ export function gatherAllSources(): Source[] {
         kunmangaScraper,
         mangackScraper,
         mangaTaroScraper,
-        novaMangaScraper
+        novaMangaScraper,
+        readMangaSeriesScraper
     ].sort((a,b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
