@@ -2,8 +2,14 @@
 Fetcher code taken from https://github.com/p-stream/providers
 
 # Sources
+- FanFox (MangaFox)
+- Mangack
 - MangaDex
-- MangaRead
-- ManhuaBuddy
 - MangaNato
-- MangaFox (FanFox)
+- MangaPark
+- MangaRead
+- MangaTaro
+- ManhuaBuddy
+- NovaManga
+- Readmanga
+- Read Manga Series
