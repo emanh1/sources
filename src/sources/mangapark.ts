@@ -4,6 +4,7 @@ import type { MangaContext, ChapterContext } from '@/utils/context';
 import type { SourceChaptersOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
+import { NotFoundError } from '@/utils/errors';
 
 const baseUrl = "https://mangapark.net";
     // mirrors:
@@ -33,7 +34,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const firstResult = $search('a.link-hover.link-pri').first();
     const mangaHref = firstResult.attr('href');
 
-    if (!mangaHref) throw new Error("No manga found for title: " + ctx.manga.title);
+    if (!mangaHref) throw new NotFoundError("No manga found for title: " + ctx.manga.title);
 
     const mangaUrl = mangaHref.startsWith('http') ? mangaHref : `${baseUrl}${mangaHref}`;
     const mangaHtml = await ctx.proxiedFetcher(mangaUrl);
