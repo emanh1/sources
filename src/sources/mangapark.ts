@@ -6,7 +6,21 @@ import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 
 const baseUrl = "https://mangapark.net";
-
+    // mirrors:
+    // https://mangapark.com
+    // https://mangapark.net
+    // https://mangapark.org
+    // https://mangapark.me
+    // https://mangapark.io
+    // https://mangapark.to
+    // https://comicpark.org
+    // https://comicpark.to
+    // https://readpark.org
+    // https://readpark.net
+    // https://parkmanga.com
+    // https://parkmanga.net
+    // https://parkmanga.org
+    // https://mpark.to
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const searchUrl = `${baseUrl}/search?word=${encodeURIComponent(ctx.manga.title)}`;
     const searchHtml = await ctx.proxiedFetcher(searchUrl, {
@@ -27,20 +41,43 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
     const chapters: Chapter[] = [];
 
-    $('a.link-hover.link-primary').each((_, el) => {
+    // naming/numbering is too inconsistent on the site, just have to live with it
+    $('a.link-hover.link-primary').each((i, el) => {
         const href = $(el).attr('href')?.trim();
         const title = $(el).text().trim();
 
         if (!href || !title) return;
 
-        const match = title.match(/Chapter\s*(\d+(?:\.\d+)?)/i) || href.match(/\/(\d+(?:\.\d+)?)-/);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const normalized = title.replace(/\s+/g, ' ').trim();
 
-        if (chapterNumber === undefined) return;
+        let chapterNumber: number | undefined = undefined;
+
+        const patterns = [
+            /Chapter\s+(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Ch\.(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Punch\s+(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Vol\.\d+\s+Ch\.(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Volume\s+\d+\s+Chapter\s+(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Ch(?:apter)?\s*(\d+\.\d+|\d+-\d+|\d+)/i,
+            /Ch\.(\d+)/i,
+            /(\d+\.\d+|\d+)/
+        ];
+
+        for (const pattern of patterns) {
+            const match = normalized.match(pattern);
+            if (match) {
+                const raw = match[1].replace('-', '.');
+                const parsed = parseFloat(raw);
+                if (!isNaN(parsed)) {
+                    chapterNumber = parsed;
+                    break;
+                }
+            }
+        }
 
         chapters.push({
-            id: chapterNumber,
-            chapterNumber,
+            id: i,
+            chapterNumber: chapterNumber ?? i,
             chapterTitle: title,
             url: href.startsWith('http') ? href : `${baseUrl}${href}`,
             sourceId: 'mangapark'
@@ -49,6 +86,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
     return chapters;
 }
+
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url, {
