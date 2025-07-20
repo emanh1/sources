@@ -1,15 +1,12 @@
-// this have the same cdn as coffeemanga, but not sure if each site have the same public
-// manga entries that exist on the other
-
 import * as cheerio from 'cheerio';
 import type { Chapter, Page } from '@/utils/types';
 import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { SourceChaptersOutput, SourcePagesOutput } from '../base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 import { toKebabCase } from '@/utils/tocase';
 
-const baseUrl = "https://www.kunmanga.online/";
+const baseUrl = "https://www.coffeemanga.art/";
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
   const url = `${baseUrl}manga/${toKebabCase(ctx.manga.title)}/`;
@@ -39,7 +36,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
       chapterNumber,
       date,
       url,
-      sourceId: 'kunmanga',
+      sourceId: 'coffeemanga',
     });
   });
 
@@ -69,12 +66,28 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
   return pages;
 }
 
-export const kunmangaScraper: Source = {
-  id: 'kunmanga',
-  name: 'KunManga',
+export const coffeemangaScraper: Source = {
+  id: 'coffeemanga',
+  name: 'CoffeeManga',
   url: baseUrl,
-  rank: 7,
+  rank: 6,
   flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
+  disabled: true,
+  // something like this
+  // async function loadImageThroughProxy(imageUrl: string) {
+  //   const response = await fetch(`http://localhost:3000?destination=${encodeURIComponent(imageUrl)}`, {
+  //     headers: {
+  //       'X-Referer': 'https://www.coffeemanga.art/',
+  //       'X-User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0'
+  //     }
+  //   });
+
+  //   if (!response.ok) throw new Error(`Failed to fetch image ${imageUrl}`);
+
+  //   const blob = await response.blob();
+  //   const imageURL = URL.createObjectURL(blob);
+  //   return imageURL;
+  // }
   scrapeChapters: fetchChapters,
   scrapePagesofChapter: fetchPages
 };
