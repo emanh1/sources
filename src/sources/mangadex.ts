@@ -19,7 +19,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const chapters = chaptersResponse.data
         .filter((ch: any) => !ctx.language || ch.attributes.translatedLanguage === ctx.language)
         .map((ch: any) => ({
-            id: ch.id,
+            chapterId: ch.id,
             chapterNumber: Number(ch.attributes.chapter),
             chapterTitle: ch.attributes.title,
             chapterVolume: Number(ch.attributes.volume),

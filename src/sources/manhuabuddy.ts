@@ -40,7 +40,7 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         const chapterIdStr = parts[parts.length - 1].replace(/[^\d]/g, '');
         const chapterId = parseInt(chapterIdStr, 10);
         return {
-            id: chapterId,
+            chapterId,
             chapterNumber,
             date,
             url: baseUrl + "/" + url,

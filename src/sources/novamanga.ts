@@ -29,7 +29,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const fullUrl = url.startsWith('http') ? url : baseUrl + url;
 
         return {
-            id: chapterNumber,
+            chapterId: chapterNumber,
             chapterNumber,
             date: dateText,
             url: fullUrl,

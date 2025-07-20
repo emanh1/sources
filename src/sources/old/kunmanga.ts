@@ -35,7 +35,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     if (!url || chapterNumber === undefined || !chapterId) return;
 
     chapters.push({
-      id: chapterId,
+      chapterId,
       chapterNumber,
       date,
       url,

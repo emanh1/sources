@@ -40,7 +40,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
 
         return {
-            id: chapterId,
+            chapterId,
             chapterNumber,
             date: dateText,
             url,

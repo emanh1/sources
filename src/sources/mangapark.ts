@@ -77,7 +77,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         }
 
         chapters.push({
-            id: i,
+            chapterId: i,
             chapterNumber: chapterNumber ?? i,
             chapterTitle: title,
             url: href.startsWith('http') ? href : `${baseUrl}${href}`,

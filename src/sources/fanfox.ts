@@ -41,7 +41,7 @@ function parseChapters($: cheerio.CheerioAPI): Chapter[] {
         if (number === undefined) return [];
 
         return [{
-            id: Number(chapterId),
+            chapterId: Number(chapterId),
             chapterNumber: number,
             date,
             url: baseUrl + href,

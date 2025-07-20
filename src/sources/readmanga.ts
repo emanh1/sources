@@ -36,7 +36,7 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         if (!url || chapterNumber === undefined || isNaN(chapterId)) return;
 
         chapters.push({
-            id: chapterId,
+            chapterId,
             chapterNumber,
             date,
             url,

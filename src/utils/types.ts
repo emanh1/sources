@@ -6,7 +6,7 @@ export type Manga = {
 }
 
 export type Chapter = {
-    id: number,
+    chapterId: number,
     chapterTitle?: string,
     chapterVolume?: number,
     chapterNumber?: number
