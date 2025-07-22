@@ -13,3 +13,4 @@ Fetcher code taken from https://github.com/p-stream/providers
 - NovaManga
 - Readmanga
 - Read Manga Series
+- MangaSekai
