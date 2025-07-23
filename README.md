@@ -15,3 +15,4 @@ Fetcher code taken from https://github.com/p-stream/providers
 - Read Manga Series
 - MangaSekai
 - Mangaoi
+- Zinmangax
