@@ -14,3 +14,4 @@ Fetcher code taken from https://github.com/p-stream/providers
 - Readmanga
 - Read Manga Series
 - MangaSekai
+- Mangaoi
