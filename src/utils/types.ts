@@ -1,5 +1,6 @@
 export type Manga = {
-    malId?: number,
+    /** MangaDex ID */
+    id?: string,
     title: string,
     title_japanese?: string,
     title_english?: string,

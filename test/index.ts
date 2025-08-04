@@ -83,7 +83,7 @@ function setupUI() {
 
     try {
       const chapters = await sources.runSourceForChapters({
-        manga: { malId: 1, title },
+        manga: { id: 'lablabh', title },
         id: sourceId,
       });
 
