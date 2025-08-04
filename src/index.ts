@@ -3,6 +3,7 @@ export type { Fetcher, DefaultedFetcherOptions, FetcherOptions, FetcherResponse 
 export type { Targets, Flags } from '@/entrypoint/targets'; 
 export type { SourceControls, SourceMakerInput } from '@/entrypoint/sources';
 export type { Manga, Chapter, Page } from '@/utils/types';
+export type { Source } from '@/sources/base';
 
 export { NotFoundError } from '@/utils/errors';
 export { makeSources, getSources } from '@/entrypoint/sources';
