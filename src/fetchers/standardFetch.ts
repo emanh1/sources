@@ -1,5 +1,3 @@
-import AbortController from 'abort-controller';
-
 import { serializeBody } from '@/fetchers/body';
 import { makeFullUrl } from '@/fetchers/common';
 import type { FetchLike, FetchReply } from '@/fetchers/fetch';
