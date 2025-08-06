@@ -40,6 +40,7 @@ export function makeFetcher(fetcher: Fetcher): UseableFetcher {
       readHeaders: ops?.readHeaders ?? [],
       body: ops?.body,
       credentials: ops?.credentials,
+      useBrowser: ops?.useBrowser ?? false
     });
   };
   const output: UseableFetcher = async (url, ops) => (await newFetcher(url, ops)).body;

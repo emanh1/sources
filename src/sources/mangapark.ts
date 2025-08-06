@@ -24,11 +24,7 @@ const baseUrl = "https://mangapark.net";
     // https://mpark.to
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const searchUrl = `${baseUrl}/search?word=${encodeURIComponent(ctx.manga.title)}`;
-    const searchHtml = await ctx.proxiedFetcher(searchUrl, {
-        headers: {
-            'x-use-browser': 'true'
-        }
-    });
+    const searchHtml = await ctx.proxiedFetcher(searchUrl, {useBrowser: true});
     const $search = cheerio.load(searchHtml);
 
     const firstResult = $search('a.link-hover.link-pri').first();
@@ -90,11 +86,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
-    const response = await ctx.proxiedFetcher(ctx.chapter.url, {
-        headers: {
-            'x-use-browser': 'true'
-        }
-    });
+    const response = await ctx.proxiedFetcher(ctx.chapter.url, {useBrowser: true});
     const $ = cheerio.load(response);
 
     const pages: Page[] = [];

@@ -10,9 +10,7 @@ const baseUrl = "https://manganato.io";
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const url = `${baseUrl}/manga/${toKebabCase(ctx.manga.title)}`;
-    const response = await ctx.proxiedFetcher(url, {
-        headers: {'x-use-browser': 'true'}
-    });
+    const response = await ctx.proxiedFetcher(url, {useBrowser: true});
     const $ = cheerio.load(response);
 
     const chapters = getChapters($);

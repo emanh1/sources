@@ -55,6 +55,13 @@ export function makeSimpleProxyFetcher(proxyUrl: string, f: FetchLike): Fetcher 
 
     const fullUrl = makeFullUrl(url, ops);
 
+    if (ops.useBrowser) {
+      ops.headers = {
+        ...ops.headers,
+        'x-use-browser': 'true'
+      }
+    }
+
     const headerEntries = Object.entries(ops.headers).map((entry) => {
       const key = entry[0].toLowerCase();
       if (headerMap[key]) return [headerMap[key], entry[1]];

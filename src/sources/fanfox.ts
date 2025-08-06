@@ -51,11 +51,7 @@ function parseChapters($: cheerio.CheerioAPI): Chapter[] {
 }
 
 async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
-    const response = await ctx.proxiedFetcher(ctx.chapter.url, {
-        headers: {
-            'x-use-browser': 'true'
-        }
-    });
+    const response = await ctx.proxiedFetcher(ctx.chapter.url, {useBrowser: true});
 
     const $ = cheerio.load(response);
     const pages: Page[] = [];
@@ -69,11 +65,7 @@ async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     //SLOW!!!
     for (let i = 1; i <= maxPage; i++) {
         const pageUrl = ctx.chapter.url.replace(/(\d+)\.html/, `${i}.html`);
-        let pageData = await ctx.proxiedFetcher(pageUrl, {
-            headers: {
-                'x-use-browser': 'true',
-            }
-        });
+        let pageData = await ctx.proxiedFetcher(pageUrl, {useBrowser: true});
         let $$ = cheerio.load(pageData);
         let imgEl = $$('.reader-main-img');
         let imgUrl = imgEl.attr('src') || '';

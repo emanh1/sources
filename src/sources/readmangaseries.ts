@@ -41,11 +41,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 }
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
-    const response = await ctx.proxiedFetcher(ctx.chapter.url, {
-        headers: {
-            'x-use-browser': 'true'
-        }
-    });
+    const response = await ctx.proxiedFetcher(ctx.chapter.url, {useBrowser: true});
     const $ = cheerio.load(response);
 
     const pages: Page[] = [];
