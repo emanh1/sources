@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import type { Chapter, Page } from '@/utils/types';
 import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { SourceChaptersOutput, SourcePagesOutput } from '../base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 import { toKebabCase } from '@/utils/tocase';
@@ -24,16 +24,16 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         if (!href || !title) return;
 
         const match = title.match(/Chapter\s*(\d+(?:\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         if (chapterNumber === undefined) return;
 
         chapters.push({
-            chapterId: chapterNumber,
+            id: chapterNumber,
+            sourceId: 'readmangaseries',
             chapterNumber,
-            date,
             url: href.startsWith('http') ? href : `${baseUrl}${href}`,
-            sourceId: 'readmangaseries'
+            date,
         });
     });
 
@@ -41,7 +41,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 }
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
-    const response = await ctx.proxiedFetcher(ctx.chapter.url, {useBrowser: true});
+    const response = await ctx.proxiedFetcher(ctx.chapter.url, { useBrowser: true });
     const $ = cheerio.load(response);
 
     const pages: Page[] = [];
@@ -55,7 +55,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: i,
             url: src,
-            chapter: ctx.chapter
         });
     });
 
@@ -67,6 +66,7 @@ export const readMangaSeriesScraper: Source = {
     name: 'Manga Series',
     url: baseUrl,
     rank: 11,
+    disabled: true,
     flags: [flags.CORS_ALLOWED, flags.DYNAMIC_RENDER],
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages

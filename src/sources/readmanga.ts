@@ -27,20 +27,20 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         const date = $el.find('p').text().trim();
 
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1];
-        const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
+        const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
-        if (!url || chapterNumber === undefined || isNaN(chapterId)) return;
+        if (!url || chapterNumber === undefined) return;
 
         chapters.push({
-            chapterId,
+            id: chapterId,
+            sourceId: 'readmanga',
             chapterNumber,
-            date,
             url,
-            sourceId: 'readmanga'
+            date,
         });
     });
 
@@ -61,7 +61,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: index,
             url: src,
-            chapter: ctx.chapter
         });
     });
 

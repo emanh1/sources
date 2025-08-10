@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio';
 import type { Chapter, Page } from '@/utils/types';
 import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { SourceChaptersOutput, SourcePagesOutput } from '../base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 import { toKebabCase } from '@/utils/tocase';
@@ -10,7 +10,7 @@ const baseUrl = "https://manganato.io";
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const url = `${baseUrl}/manga/${toKebabCase(ctx.manga.title)}`;
-    const response = await ctx.proxiedFetcher(url, {useBrowser: true});
+    const response = await ctx.proxiedFetcher(url, { useBrowser: true });
     const $ = cheerio.load(response);
 
     const chapters = getChapters($);
@@ -31,7 +31,7 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
 
         // Extract chapter number from titleText
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         // Get release date text
         const date = $li.find('.chapter-release-date i').text().trim();
@@ -41,14 +41,14 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         // Extract chapter id from URL (last segment)
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1];
-        const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
+        const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
         return {
-            chapterId,
+            id: chapterId,
+            sourceId: 'manganato',
             chapterNumber,
-            date,
             url,
-            sourceId: 'manganato'
+            date
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 }
@@ -72,7 +72,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: pageNumber,
             url: src,
-            chapter: ctx.chapter
         });
     });
 
@@ -87,6 +86,7 @@ export const manganatoScraper: Source = {
     url: baseUrl,
     rank: 2,
     flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
+    disabled: true,
     scrapeChapters: fetchChapters,
     scrapePagesofChapter: fetchPages
 };

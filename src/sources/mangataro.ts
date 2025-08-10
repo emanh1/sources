@@ -29,7 +29,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const titleText = $a.attr('title')?.trim() ?? '';
 
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         const dateText = $a.find('div.flex.items-center span').first().text().trim();
 
@@ -37,14 +37,14 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1];
-        const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
+        const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
         return {
-            chapterId,
+            id: chapterId,
+            sourceId: 'mangataro',
             chapterNumber,
-            date: dateText,
             url,
-            sourceId: 'mangataro'
+            date: dateText,
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 
@@ -66,7 +66,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: index,
             url: src,
-            chapter: ctx.chapter
         });
     });
 

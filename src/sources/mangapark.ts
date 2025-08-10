@@ -47,7 +47,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
         const normalized = title.replace(/\s+/g, ' ').trim();
 
-        let chapterNumber: number | undefined = undefined;
+        let chapterNumber: string | undefined = undefined;
 
         const patterns = [
             /Chapter\s+(\d+\.\d+|\d+-\d+|\d+)/i,
@@ -64,20 +64,17 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
             const match = normalized.match(pattern);
             if (match) {
                 const raw = match[1].replace('-', '.');
-                const parsed = parseFloat(raw);
-                if (!isNaN(parsed)) {
-                    chapterNumber = parsed;
-                    break;
-                }
+                chapterNumber = raw;
+                break;
             }
         }
 
         chapters.push({
-            chapterId: i,
-            chapterNumber: chapterNumber ?? i,
-            chapterTitle: title,
+            id: String(i),
+            sourceId: 'mangapark',
+            title,
+            chapterNumber: chapterNumber ?? String(i),
             url: href.startsWith('http') ? href : `${baseUrl}${href}`,
-            sourceId: 'mangapark'
         });
     });
 
@@ -98,7 +95,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: i,
             url: src,
-            chapter: ctx.chapter
         });
     });
 

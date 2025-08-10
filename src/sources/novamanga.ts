@@ -22,18 +22,18 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const dateText = $a.find('p.text-xs.font-medium').text().trim();
 
         const match = chapterText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         if (chapterNumber === undefined) return null;
 
         const fullUrl = url.startsWith('http') ? url : baseUrl + url;
 
         return {
-            chapterId: chapterNumber,
+            id: chapterNumber,
+            sourceId: 'novamanga',
             chapterNumber,
-            date: dateText,
             url: fullUrl,
-            sourceId: 'novamanga'
+            date: dateText
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 
@@ -56,7 +56,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: index,
             url: src,
-            chapter: ctx.chapter
         });
     });
 

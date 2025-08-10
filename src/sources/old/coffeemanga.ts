@@ -24,19 +24,19 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const date = $el.find('.chapter-release-date i').text().trim();
 
     const match = titleText.match(/chapter\s*([\d.]+)/i);
-    const chapterNumber = match ? parseFloat(match[1]) : undefined;
+    const chapterNumber = match ? match[1] : undefined;
 
     const idAttr = $a.attr('data-id');
-    const chapterId = idAttr ? parseInt(idAttr, 10) : undefined;
+    const chapterId = idAttr ? idAttr : undefined;
 
     if (!url || chapterNumber === undefined || !chapterId) return;
 
     chapters.push({
-      chapterId,
-      chapterNumber,
-      date,
-      url,
+      id: chapterId,
       sourceId: 'coffeemanga',
+      chapterNumber,
+      url,
+      date
     });
   });
 
@@ -59,7 +59,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     pages.push({
       id: i,
       url: src,
-      chapter: ctx.chapter,
     });
   });
 

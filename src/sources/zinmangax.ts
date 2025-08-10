@@ -35,18 +35,18 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
         if (!href || !title) return;
 
-        let chapterNumber: number | undefined;
+        let chapterNumber: string | undefined;
         const match = title.match(/Chapter\s+(\d+(\.\d+)?)/i);
         if (match) {
-            chapterNumber = parseFloat(match[1]);
+            chapterNumber = match[1];
         }
 
         chapters.push({
-            chapterId: i,
-            chapterNumber: chapterNumber ?? i,
-            chapterTitle: title,
+            id: String(i),
+            sourceId: 'zinmangax',
+            chapterNumber: chapterNumber ?? String(i),
+            title: title,
             url: href.startsWith('http') ? href : `${baseUrl}${href}`,
-            sourceId: 'zinmangax'
         });
     });
 
@@ -68,7 +68,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: i,
             url: fullUrl,
-            chapter: ctx.chapter
         });
     });
 

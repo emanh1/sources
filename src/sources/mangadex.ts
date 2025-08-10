@@ -17,15 +17,15 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         baseUrl
     });
     const chapters = chaptersResponse.data
-        .filter((ch: any) => !ctx.language || ch.attributes.translatedLanguage === ctx.language)
+        .filter((ch: any) => !ctx.manga.translatedLanguage || ch.attributes.translatedLanguage === ctx.manga.translatedLanguage)
         .map((ch: any) => ({
-            chapterId: ch.id,
-            chapterNumber: Number(ch.attributes.chapter),
-            chapterTitle: ch.attributes.title,
-            chapterVolume: Number(ch.attributes.volume),
+            id: ch.id,
+            sourceId: 'mangadex',
+            title: ch.attributes.title,
+            volume: ch.attributes.volume,
+            chapterNumber: ch.attributes.chapter,
             date: ch.attributes.publishAt,
             url: `${baseUrl}/at-home/server/${ch.id}`,
-            sourceId: 'mangadex'
         } satisfies Chapter));
     console.log(chapters);
     return chapters
