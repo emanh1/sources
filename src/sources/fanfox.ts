@@ -89,20 +89,20 @@ function parseChapters($: cheerio.CheerioAPI): Chapter[] {
         const href = $el.attr('href');
         if (!href) return [];
 
-        const chapterId = href.split('/').pop() || '';
         const title = $el.find('.title3').text().trim();
         const date = $el.find('.title2').text().trim();
 
         const match = title.match(/Ch\.(\d+(\.\d+)?)/i) || title.match(/c(\d+(\.\d+)?)/i);
-        const number = match ? parseFloat(match[1]) : undefined;
+        const number = match ? match[1] : undefined;
         if (number === undefined) return [];
 
         return [{
-            chapterId: Number(chapterId),
+            id: number,
+            sourceId: 'fanfox',
+            title,
             chapterNumber: number,
-            date,
             url: baseUrl + href,
-            sourceId: 'fanfox'
+            date,
         } satisfies Chapter];
     });
 }
@@ -158,7 +158,6 @@ async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         return {
             id: idx,
             url: normalizedUrl,
-            chapter: ctx.chapter,
         };
     }) as Page[];
 

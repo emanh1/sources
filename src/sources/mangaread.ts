@@ -31,7 +31,7 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
 
         // Extract chapter number from titleText
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         // Get release date text
         const date = $li.find('.chapter-release-date i').text().trim();
@@ -41,14 +41,14 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         // Extract chapter id from URL (last segment)
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1]; 
-        const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
+        const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
         return {
-            chapterId,
+            id: chapterId,
+            sourceId: 'mangaread',
             chapterNumber,
-            date,
             url,
-            sourceId: 'mangaread'
+            date
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 }
@@ -72,7 +72,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: pageNumber,
             url: src,
-            chapter: ctx.chapter
         });
     });
 

@@ -18,7 +18,6 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 }
 
 function getChapters($: cheerio.CheerioAPI): Chapter[] {
-    // Select all chapter <li> items in the chapter list
     const chapterItems = $('li.citem').toArray();
 
     return chapterItems.map((li) => {
@@ -27,24 +26,22 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
         const url = $a.attr('href') || '';
         const titleText = $a.text().trim();
 
-        // Extract chapter number from title
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
-        // Get release date from <span class="time">
         const date = $li.find('.time').text().trim();
 
         if (!url || chapterNumber === undefined) return null;
 
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1].replace(/[^\d]/g, '');
-        const chapterId = parseInt(chapterIdStr, 10);
+        const chapterId = chapterIdStr;
         return {
-            chapterId,
+            id: chapterId,
+            sourceId: 'manhuabuddy',
             chapterNumber,
-            date,
             url: baseUrl + "/" + url,
-            sourceId: 'manhuabuddy'
+            date
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 }
@@ -62,7 +59,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         pages.push({
             id: idx + 1,
             url: src,
-            chapter: ctx.chapter
         });
     });
     return pages;

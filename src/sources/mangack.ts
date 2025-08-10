@@ -20,7 +20,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const titleText = $a.text().trim();
 
         const match = titleText.match(/chapter\s*(\d+(\.\d+)?)/i);
-        const chapterNumber = match ? parseFloat(match[1]) : undefined;
+        const chapterNumber = match ? match[1] : undefined;
 
         const date = $li.find('span.entry-date').text().trim();
 
@@ -28,14 +28,14 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
         const parts = url.split('/').filter(Boolean);
         const chapterIdStr = parts[parts.length - 1];
-        const chapterId = parseInt(chapterIdStr.replace(/[^\d]/g, ''), 10);
+        const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
         return {
-            chapterId,
+            id: chapterId,
+            sourceId: 'mangack',
             chapterNumber,
             date,
             url,
-            sourceId: 'mangack'
         } satisfies Chapter;
     }).filter(Boolean) as Chapter[];
 
@@ -55,8 +55,7 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
 
         pages.push({
             id: index,
-            url: src,
-            chapter: ctx.chapter
+            url: src
         });
     });
 

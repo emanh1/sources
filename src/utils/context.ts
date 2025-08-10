@@ -8,7 +8,6 @@ export type ScrapeContext = {
 
 export type MangaContext = ScrapeContext & {
     manga: Manga;
-    language?: string;
 }
 
 export type ChapterContext = ScrapeContext & {

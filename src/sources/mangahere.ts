@@ -96,15 +96,15 @@ function parseChapters($: cheerio.CheerioAPI): Chapter[] {
         const date = $el.find('.title2').text().trim();
 
         const match = title.match(/Ch\.(\d+(\.\d+)?)/i) || title.match(/c(\d+(\.\d+)?)/i);
-        const number = match ? parseFloat(match[1]) : undefined;
+        const number = match ? match[1] : undefined;
         if (number === undefined) return [];
 
         return [{
-            chapterId: Number(chapterId),
+            id: chapterId,
+            sourceId: 'mangahere',
             chapterNumber: number,
-            date,
             url: baseUrl + href,
-            sourceId: 'mangahere'
+            date,
         } satisfies Chapter];
     });
 }
@@ -161,7 +161,6 @@ async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
         return {
             id: idx,
             url: normalizedUrl,
-            chapter: ctx.chapter,
         };
     }) as Page[];
 

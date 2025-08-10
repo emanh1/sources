@@ -2,22 +2,28 @@ export type Manga = {
     /** MangaDex ID */
     id?: string,
     title: string,
-    title_japanese?: string,
-    title_english?: string,
+    altTitles: {
+        en?: string,
+        'ja-ro'?: string,
+        'ko-ro'?: string,
+        'zh-ro'?: string,
+        [key: string]: string | undefined
+    }
+    originalLanguage: string,
+    translatedLanguage: string
 }
 
 export type Chapter = {
-    chapterId: number,
-    chapterTitle?: string,
-    chapterVolume?: number,
-    chapterNumber?: number
+    id: string,
+    sourceId: string
+    title?: string | null,
+    volume?: string | null,
+    chapterNumber?: string | null,
     url: string,
     date?: string,
-    sourceId: string
 }
 
 export type Page = {
     id: number,
-    chapter: Chapter
-    url: string
+    url: string,
 }
