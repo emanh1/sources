@@ -16,9 +16,9 @@ function extractMangaIdFromScript(script: string): string | null {
     return null;
 }
 
-function extractChapterNumber(title: string): number {
+function extractChapterNumber(title: string): string {
     const match = title.match(/Chapter\s+([\d.]+)/i);
-    return match ? parseFloat(match[1]) : -1;
+    return match ? match[1] : "";
 }
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
@@ -49,11 +49,11 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
         if (href) {
             chapters.push({
-                chapterId: i,
-                chapterTitle: title,
-                url: href.startsWith('http') ? href : `${baseUrl}${href}`,
+                id: String(i),
+                sourceId: 'mangapanda',
+                title,
                 chapterNumber: extractChapterNumber(title),
-                sourceId: 'mangapanda'
+                url: href.startsWith('http') ? href : `${baseUrl}${href}`,
             });
         }
     });
@@ -72,7 +72,6 @@ async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     return urls.map((url, index) => ({
         id: index,
         url: url.startsWith('http') ? url : `https:${url}`,
-        chapter: ctx.chapter
     })) as Page[];
 
 }
