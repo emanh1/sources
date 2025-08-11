@@ -50,6 +50,7 @@ function renderSourcesSelector(sources: ReturnType<SourceControls['listSources']
 
 
 function renderMangas(mangas: Manga[]) {
+  console.log(mangas);
   return `<ul>
         ${mangas.map((m, i) =>
     `<li><a href="#" data-manga-idx="${i}">${m.title}</a></li>`
