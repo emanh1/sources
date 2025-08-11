@@ -128,7 +128,6 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     //different order from fanfox
     const chapterid = extractVarFromScript(scripts[6], 'chapterid');
     const totalPages = extractVarFromScript(scripts[6], 'imagecount');
-    console.log(scripts);
     const dm5_key = extractDm5KeyFromPacked(scripts[8]);
 
     if (!chapterid || !dm5_key || !totalPages) {

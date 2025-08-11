@@ -110,7 +110,6 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
-    console.log(response);
     const pages: Page[] = [];
 
     $('div.flex img').each((index, img) => {
