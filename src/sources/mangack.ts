@@ -1,16 +1,51 @@
 import * as cheerio from 'cheerio';
 import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { toKebabCase } from '@/utils/tocase';
 
 const baseUrl = "https://mangack.com";
 
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const response = await ctx.proxiedFetcher(baseUrl, {
+        query: {
+            s: encodeURIComponent(ctx.titleInput).replace(/%20/g, '+')
+        }
+    });
+    const $ = cheerio.load(response);
+
+    const mangas: SourceMangasOutput = [];
+
+    for (const div of $('.Latest_chapter_update').toArray()) {
+        const $div = $(div);
+
+        const $a = $div.find('a').first();
+        const url = $a.attr('href')?.trim();
+        const title = $a.attr('title')?.trim() || $div.find('h4 a').text().trim();
+
+        const id = url ? url.split('/').filter(Boolean).pop() : undefined;
+
+        const img = $div.find('img').first();
+        const image = img.attr('src')?.trim();
+
+        if (!id || !title || !url) continue;
+
+        mangas.push({
+            id,
+            title,
+            url,
+            coverUrl: image,
+            sourceId: 'mangack',
+        });
+    }
+
+    return mangas;
+}
+
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manga/${toKebabCase(ctx.manga.title)}`;
-    const response = await ctx.proxiedFetcher(url);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
 
     const chapters = $('ul.chapterslist li').toArray().map((li) => {
@@ -68,7 +103,8 @@ export const mangackScraper: Source = {
     url: baseUrl,
     rank: 8,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };
 

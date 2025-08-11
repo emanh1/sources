@@ -1,28 +1,44 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { NotFoundError } from '@/utils/errors';
 
 const baseUrl = 'https://zinmangax.com';
 
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const searchUrl = `${baseUrl}/search`;
+    const searchHtml = await ctx.proxiedFetcher(searchUrl, {
+        query: {
+            q: ctx.titleInput
+        }
+    })
+    const $ = cheerio.load(searchHtml);
+    const mangas: Manga[] = [];
+    $('.grid > .group').each((_, el) => {
+        const el$ = $(el);
+
+        const titleAnchor = el$.find('a[title][href]').first();
+        const title = titleAnchor.attr('title')?.trim() || '';
+        const url = titleAnchor.attr('href') || '';
+
+        // Cover image URL
+        const coverImg = el$.find('img').first();
+        const coverUrl = coverImg.attr('src') || '';
+
+        mangas.push({
+            sourceId: 'zinmangax', // replace with your source id string
+            title,
+            url: baseUrl + url,
+            coverUrl,
+        });
+    });
+    return mangas
+}
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const searchUrl = `${baseUrl}/search?q=${encodeURIComponent(ctx.manga.title)}`;
-    const searchHtml = await ctx.proxiedFetcher(searchUrl);
-    const $search = cheerio.load(searchHtml);
-
-    // Find first manga result
-    const firstAnchor = $search('a[href^="/manga/"]').first();
-    const mangaHref = firstAnchor.attr('href');
-
-    if (!mangaHref) {
-        throw new NotFoundError("No manga found for title: " + ctx.manga.title);
-    }
-
-    const mangaUrl = mangaHref.startsWith('http') ? mangaHref : `${baseUrl}${mangaHref}`;
-    const mangaHtml = await ctx.proxiedFetcher(mangaUrl);
+    const mangaHtml = await ctx.proxiedFetcher(ctx.manga.url);
 
     const $ = cheerio.load(mangaHtml);
 
@@ -80,6 +96,7 @@ export const zinmangaxScraper: Source = {
     url: baseUrl,
     rank: 15,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };

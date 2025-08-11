@@ -88,5 +88,5 @@ export const manganatoScraper: Source = {
     flags: [flags.DYNAMIC_RENDER, flags.CORS_ALLOWED],
     disabled: true,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };

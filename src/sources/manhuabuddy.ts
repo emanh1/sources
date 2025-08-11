@@ -1,16 +1,69 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { toKebabCase } from '@/utils/tocase';
 
 const baseUrl = "https://manhuabuddy.com"
 
+
+//literally the same as mangaoi
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const mangas: Manga[] = [];
+    const searchUrl = `${baseUrl}/search/`;
+    const searchHtml = await ctx.proxiedFetcher(searchUrl, {
+        query: {
+            s: ctx.titleInput
+        }
+    });
+
+    const $ = cheerio.load(searchHtml);
+
+    // $('ul li a.item').each((_, el) => {
+    //     const element = $(el);
+
+    //     let relativeUrl = element.attr('href') ?? '';
+    //     const url = relativeUrl.startsWith('http')
+    //         ? relativeUrl
+    //         : baseUrl.replace(/\/$/, '') + relativeUrl;
+
+    //     const img = element.find('img');
+    //     const coverUrl = img.attr('src') ?? '';
+
+    //     const title = img.attr('alt')?.trim() || element.contents().first().text().trim();
+
+    //     mangas.push({
+    //         sourceId: 'manhuabuddy',
+    //         title,
+    //         coverUrl,
+    //         url,
+    //     });
+    // });
+    $('.list_wrap ul > li').each((_, el) => {
+        const root = $(el);
+        const linkEl = root.find('div.visual a').first();
+        const url = linkEl.attr('href');
+        if (!url) return;
+        const realUrl = url.replace('read-hentai', 'manhwa')
+        const title = linkEl.find('img').attr('alt')?.trim() || linkEl.text().trim();
+
+        const coverUrl = linkEl.find('img').attr('src') || undefined;
+
+        mangas.push({
+            sourceId: 'manhuabuddy',
+            title,
+            url: realUrl,
+            coverUrl,
+        });
+    });
+
+
+    return mangas;
+}
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manhwa/${toKebabCase(ctx.manga.title)}/`;
-    const response = await ctx.proxiedFetcher(url);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
 
     const chapters = getChapters($);
@@ -70,6 +123,7 @@ export const manhuaBuddyScraper: Source = {
     url: baseUrl,
     rank: 3,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };

@@ -1,18 +1,22 @@
 # manga_web sources
-Fetcher code taken from https://github.com/p-stream/providers
-
+Scrape mangas from multiple sources!
 # Sources
 - FanFox (MangaFox)
 - Mangack
+- Mangahere
 - MangaDex
-- MangaNato
+- Mangaoi
+- MangaPanda
 - MangaPark
 - MangaRead
+- MangaSekai
 - MangaTaro
+- MangaTown
 - ManhuaBuddy
 - NovaManga
 - Readmanga
-- Read Manga Series
-- MangaSekai
-- Mangaoi
 - Zinmangax
+
+...and more to come!
+# Credits
+Fetcher code taken from https://github.com/p-stream/providers

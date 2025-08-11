@@ -1,16 +1,51 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { toKebabCase } from '@/utils/tocase';
+import { NotFoundError } from '@/utils/errors';
 
-const baseUrl = "https://www.mangaread.org/";
+const baseUrl = "https://www.mangaread.org";
+
+interface MangaItem {
+    title: string,
+    url: string,
+    type: string
+}
+
+interface SearchResponse {
+    success: boolean
+    data: MangaItem[]
+}
+
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const mangas: Manga[] = [];
+    const formData = new FormData();
+    formData.append('action', 'wp-manga-search-manga');
+    formData.append('title', ctx.titleInput);
+
+    const response: SearchResponse = await ctx.proxiedFetcher(`${baseUrl}/wp-admin/admin-ajax.php`, {
+        body: formData,
+        method: "POST",
+        // headers: {
+        //     "X-Origin": baseUrl,
+        //     "X-Referer": `${baseUrl}/?s=${encodeURIComponent(ctx.titleInput).replace(/%20/g, '+')}&post_type=wp-manga`
+        // }
+    })
+    if (!response.success) throw new NotFoundError(`[MangaRead] error while connecting to api`);
+    for (const item of response.data) {
+        mangas.push({
+            title: item.title,
+            url: item.url,
+            sourceId: 'mangaread',
+        })
+    }
+    return mangas;
+}
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}manga/${toKebabCase(ctx.manga.title)}/`;
-    const response = await ctx.proxiedFetcher(url);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
 
     const chapters = getChapters($);
@@ -40,7 +75,7 @@ function getChapters($: cheerio.CheerioAPI): Chapter[] {
 
         // Extract chapter id from URL (last segment)
         const parts = url.split('/').filter(Boolean);
-        const chapterIdStr = parts[parts.length - 1]; 
+        const chapterIdStr = parts[parts.length - 1];
         const chapterId = chapterIdStr.replace(/[^\d]/g, '');
 
         return {
@@ -86,6 +121,7 @@ export const mangaReadScraper: Source = {
     url: baseUrl,
     rank: 1,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };

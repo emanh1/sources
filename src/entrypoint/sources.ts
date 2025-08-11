@@ -1,11 +1,11 @@
 import type { Fetcher } from '@/fetchers/types';
 import { flagsAllowedInFeatures, getTargetFeatures, type FeatureMap, type Targets } from '@/entrypoint/targets';
 import { gatherAllSources } from '@/sources/all';
-import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
+import type { Source, SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from '@/sources/base';
 import { hasDuplicates } from '@/utils/predicates';
 import type { Chapter, Manga } from '@/utils/types';
 import { makeFetcher } from '@/fetchers/common';
-import { fetchPagesFromSource, runAllSourcesForChapters, runSourceForChapters } from '@/runner/runner';
+import { runAllSourcesForMangas, runSourceForChapters, runSourceForMangas, runSourceForPages } from '@/runner/runner';
 
 export interface SourceMakerInput {
     fetcher: Fetcher,
@@ -13,26 +13,32 @@ export interface SourceMakerInput {
     target: Targets,
 }
 
-export interface RunnerOptions {
+export interface MangaRunAllRunnerOptions {
+    titleInput: string
+}
+
+export interface MangaRunnerOptions {
+    sourceId: string
+    titleInput: string
+}
+
+export interface ChapterRunnerOptions {
     manga: Manga
 }
 
-export interface SourceRunnerOptions {
-    id: string,
-    manga: Manga
-}
-
-export interface SourcePageRunnerOptions {
+export interface PageRunnerOptions {
     chapter: Chapter
 }
 
 export interface SourceControls {
-    // fetch chapters lists from all sources
-    runAll(runnerOps: RunnerOptions): Promise<Record<string, SourceChaptersOutput>>;
-    // fetch chapters list from specific source
-    runSourceForChapters(runnerOps: SourceRunnerOptions): Promise<SourceChaptersOutput>;
+    // fetch lists of mangas from all sources
+    runAllForMangas(runnerOps: MangaRunAllRunnerOptions): Promise<Record<string, SourceMangasOutput>>;
+    // fetch a list of mangas from a specific source
+    runSourceForMangas(runnerOps: MangaRunnerOptions): Promise<SourceMangasOutput>;
+    // fetch chapters of a manga (source origin included)
+    runSourceForChapters(runnerOps: ChapterRunnerOptions): Promise<SourceChaptersOutput>;
     // fetch pages of a chapter (source origin included)
-    runSourceForPages(runnerOps: SourcePageRunnerOptions): Promise<SourcePagesOutput>;
+    runSourceForPages(runnerOps: PageRunnerOptions): Promise<SourcePagesOutput>;
 
     listSources(): Source[];
 }
@@ -58,8 +64,15 @@ export function makeSources(ops: SourceMakerInput): SourceControls {
         features: features,
     }
     return {
-        runAll(runnerOps) {
-            return runAllSourcesForChapters(list, {
+        runAllForMangas(runnerOps) {
+            return runAllSourcesForMangas(list, {
+                ...fetcherOps,
+                ...runnerOps,
+            });
+        },
+
+        runSourceForMangas(runnerOps) {
+            return runSourceForMangas(list, {
                 ...fetcherOps,
                 ...runnerOps,
             });
@@ -73,7 +86,7 @@ export function makeSources(ops: SourceMakerInput): SourceControls {
         },
 
         runSourceForPages(runnerOps) {
-            return fetchPagesFromSource(list, {
+            return runSourceForPages(list, {
                 ...fetcherOps,
                 ...runnerOps
             })

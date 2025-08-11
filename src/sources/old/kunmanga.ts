@@ -76,5 +76,5 @@ export const kunmangaScraper: Source = {
   disabled: true,
   flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
   scrapeChapters: fetchChapters,
-  scrapePagesofChapter: fetchPages
+  scrapePages: fetchPages
 };

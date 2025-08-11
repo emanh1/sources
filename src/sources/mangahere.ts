@@ -1,15 +1,69 @@
 // same site architecture as fanfox (??)
 
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { Source, SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from '@/sources/base';
 import { Element } from 'domhandler';
 import { flags } from '@/entrypoint/targets';
-import { toSnakeCase } from '@/utils/tocase';
 import { chapterFun, extractDm5KeyFromPacked, extractVarFromScript } from '@/utils/chapterfunashx';
 
 const baseUrl = "https://www.mangahere.cc";
+
+function parseMangas($: cheerio.CheerioAPI): Manga[] {
+    const mangas: Manga[] = [];
+    $('ul.manga-list-4-list > li').each((_, el) => {
+        const $el = $(el);
+
+        const $titleLink = $el.find('p.manga-list-4-item-title > a');
+        const title = $titleLink.attr('title')?.trim() || '';
+        const relativeUrl = $titleLink.attr('href') || '';
+        const url = relativeUrl.startsWith('http') ? relativeUrl : `${baseUrl}${relativeUrl}`;
+
+        const coverUrl = $el.find('a > img.manga-list-4-cover').attr('src') || '';
+
+        const authors: string[] = [];
+        $el.find('p.manga-list-4-item-tip').each((_, tip) => {
+            const text = $(tip).text().trim();
+            if (text.startsWith('Author:')) {
+                $(tip).find('a.blue').each((_, a) => {
+                    const authorName = $(a).text().trim();
+                    if (authorName) authors.push(authorName);
+                });
+            }
+        });
+
+        const statusText = $el.find('p.manga-list-4-show-tag-list-2 > a').text().toLowerCase();
+        let status: Manga['status'] = undefined;
+        if (statusText.includes('completed')) status = 'completed';
+        else if (statusText.includes('ongoing')) status = 'ongoing';
+        else if (statusText.includes('hiatus')) status = 'hiatus';
+        else if (statusText.includes('cancelled')) status = 'cancelled';
+
+        let description = '';
+        const tipParagraphs = $el.find('p.manga-list-4-item-tip').toArray();
+        for (let i = tipParagraphs.length - 1; i >= 0; i--) {
+            const tipText = $(tipParagraphs[i]).text().trim();
+            if (!tipText.startsWith('Author:') && !tipText.startsWith('Latest Chapter:')) {
+                description = tipText;
+                break;
+            }
+        }
+
+        mangas.push({
+            sourceId: 'mangahere',
+            title,
+            url,
+            coverUrl,
+            author: authors,
+            artist: [],
+            status,
+            description,
+        });
+    });
+
+    return mangas;
+}
 
 function parseChapters($: cheerio.CheerioAPI): Chapter[] {
     const container = $('#chapterlist');
@@ -45,15 +99,26 @@ function parseChapters($: cheerio.CheerioAPI): Chapter[] {
     });
 }
 
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const url = `${baseUrl}/search`;
+    const response = await ctx.proxiedFetcher(url, {
+        query: {
+            title: encodeURIComponent(ctx.titleInput).replace(/%20/g, '+')
+        }
+    });
+    const $ = cheerio.load(response);
+    const mangas = parseMangas($);
+    return mangas;
+}
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manga/${toSnakeCase(ctx.manga.title)}/`;
-    const response = await ctx.proxiedFetcher(url);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
     const chapters = parseChapters($);
     return chapters;
 }
 
-async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
+async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
     const scripts = $('script')
@@ -67,7 +132,7 @@ async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const dm5_key = extractDm5KeyFromPacked(scripts[8]);
 
     if (!chapterid || !dm5_key || !totalPages) {
-        throw new Error('[Fanfox] Missing required variables');
+        throw new Error('[Mangahere] Missing required variables');
     }
 
     const fetchChapterPages = chapterFun(ctx, chapterid, totalPages, dm5_key);
@@ -91,6 +156,7 @@ export const mangaHereScraper: Source = {
     url: baseUrl,
     rank: 17,
     flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: getPages
+    scrapePages: fetchPages
 };

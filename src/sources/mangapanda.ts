@@ -1,12 +1,18 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { Source, SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { toKebabCase } from '@/utils/tocase';
 import { NotFoundError } from '@/utils/errors';
 
 const baseUrl = "https://www.mangapanda.in";
+
+type SearchResponse = {
+    value: string,
+    label: string,
+    thumbnail: string,
+    link: string,
+}
 
 function extractMangaIdFromScript(script: string): string | null {
     const match = script.match(/var\s+mangaID\s*=\s*['"](\d+)['"]/i);
@@ -21,9 +27,31 @@ function extractChapterNumber(title: string): string {
     return match ? match[1] : "";
 }
 
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const mangas: Manga[] = [];
+    const url = `${baseUrl}/search-autocomplete`
+    const response: SearchResponse[] = JSON.parse(await ctx.proxiedFetcher(url, {
+        query: {
+            term: ctx.titleInput
+        }
+    }))
+    for (const item of response) {
+        try {
+            mangas.push({
+                sourceId: 'mangapanda',
+                title: item.label,
+                url: item.link,
+                coverUrl: item.thumbnail
+            })
+        } catch (error) {
+            console.warn(`[MangaPanda] ${error}`)
+        }
+    }
+    return mangas
+}
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const mangaUrl = `${baseUrl}/manga/${toKebabCase(ctx.manga.title)}/`;
-    const response = await ctx.proxiedFetcher(mangaUrl);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
 
     const scripts = $('script')
@@ -61,7 +89,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     return chapters;
 }
 
-async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
+async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
     const raw = $('#arraydata').text().trim();
@@ -82,6 +110,7 @@ export const mangaPandaScraper: Source = {
     url: baseUrl,
     rank: 18,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: getPages
+    scrapePages: fetchPages
 };

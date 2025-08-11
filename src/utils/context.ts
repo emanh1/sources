@@ -6,11 +6,14 @@ export type ScrapeContext = {
     fetcher: UseableFetcher;
 }
 
+export type SearchContext = ScrapeContext & {
+    titleInput: string
+}
+
 export type MangaContext = ScrapeContext & {
     manga: Manga;
 }
 
 export type ChapterContext = ScrapeContext & {
     chapter: Chapter;
-    sourceId: string;
 }

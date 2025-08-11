@@ -1,16 +1,20 @@
 export type Manga = {
     /** MangaDex ID */
     id?: string,
+    sourceId: string,
     title: string,
-    altTitles: {
-        en?: string,
-        'ja-ro'?: string,
-        'ko-ro'?: string,
-        'zh-ro'?: string,
-        [key: string]: string | undefined
-    }
-    originalLanguage: string,
-    translatedLanguage: string
+    altTitles?: {[key: string]: string}[],
+    description?: string,
+    coverUrl?: string,
+    author?: string[],
+    artist?: string[],
+    publicationDemographic?: 'shounen' | 'shoujo' | 'josei' | 'seinen' | null,
+    status?: 'completed' | 'ongoing' | 'hiatus' | 'cancelled'
+    year?: number | null
+    contentRating?: 'safe' | 'suggestive' | 'erotica' | 'pornographic',
+    tags?: string[],
+    originalLanguage?: string,
+    url: string,
 }
 
 export type Chapter = {
@@ -18,7 +22,11 @@ export type Chapter = {
     sourceId: string
     title?: string | null,
     volume?: string | null,
+    translatedLanguage?: string, //ISO 639-1 + (https://en.wikipedia.org/wiki/IETF_language_tag)
     chapterNumber?: string | null,
+    scanlationGroup?: string | null,
+    uploader?: string | null,
+    branch?: string
     url: string,
     date?: string,
 }

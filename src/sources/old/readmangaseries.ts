@@ -69,5 +69,5 @@ export const readMangaSeriesScraper: Source = {
     disabled: true,
     flags: [flags.CORS_ALLOWED, flags.DYNAMIC_RENDER],
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };

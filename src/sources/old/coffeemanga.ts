@@ -88,5 +88,5 @@ export const coffeemangaScraper: Source = {
   //   return imageURL;
   // }
   scrapeChapters: fetchChapters,
-  scrapePagesofChapter: fetchPages
+  scrapePages: fetchPages
 };

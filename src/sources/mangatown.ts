@@ -1,39 +1,61 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { Source, SourceChaptersOutput, SourcePagesOutput } from '@/sources/base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { Source, SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-// import { toSnakeCase } from '@/utils/tocase';
 import { NotFoundError } from '@/utils/errors';
 import { chapterFun, extractVarFromScript } from '@/utils/chapterfunashx';
 
-type SearchResponse = {
-    query: string,
-    suggestions: string[],
-    data: string[]
-}
-
 const baseUrl = "https://www.mangatown.com";
 
-async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const searchUrl = `${baseUrl}/ajax/search/`;
-    const response: SearchResponse = JSON.parse(await ctx.proxiedFetcher(searchUrl, {
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const searchUrl = `${baseUrl}/search`;
+    const response = await ctx.proxiedFetcher(searchUrl, {
         query: {
-            query: ctx.manga.title
+            name: ctx.titleInput
         }
-    }));
-    console.log(response);
-    if (response.data.length == 0) {
-        throw new NotFoundError(`[MangaTown] cant find anything with query ${ctx.manga.title}`)
-    }
-    let exactIndex = response.suggestions.findIndex(
-        s => s.toLowerCase() === response.query.toLowerCase()
-    );
-    if (exactIndex === -1) {
-        exactIndex = 0;
-    }
-    const mangaUrl = baseUrl + response.data[exactIndex];
-    const $ = cheerio.load(await ctx.proxiedFetcher(mangaUrl));
+    })
+    const $ = cheerio.load(response);
+    const mangas: Manga[] = [];
+
+    $('ul.manga_pic_list > li').each((_, el) => {
+        const $el = $(el);
+
+        const linkEl = $el.find('a.manga_cover');
+        const url = linkEl.attr('href');
+        if (!url) return ;
+        const coverUrl = linkEl.find('img').attr('src') ?? undefined;
+        const title = $el.find('p.title > a').attr('title') || $el.find('p.title > a').text().trim();
+        const authorText = $el.find('p.view').filter((_, e) => $(e).text().startsWith('Author:')).text();
+        const authorMatch = authorText.match(/Author:\s*(.+)/);
+        const author = authorMatch ? [authorMatch[1].trim()] : undefined;
+        const statusText = $el.find('p.view').filter((_, e) => $(e).text().startsWith('Status:')).text();
+        const status = statusText.toLowerCase().includes('ongoing')
+            ? 'ongoing'
+            : statusText.toLowerCase().includes('completed')
+                ? 'completed'
+                : undefined;
+
+        const tags: string[] = [];
+        $el.find('p.keyWord a').each((_, tagEl) => {
+            tags.push($(tagEl).text().trim());
+        });
+
+        mangas.push({
+            sourceId: 'mangatown',
+            title,
+            url:`${baseUrl}${url}`,
+            coverUrl,
+            author,
+            status,
+            tags: tags.length > 0 ? tags : undefined,
+        });
+    });
+    return mangas
+}
+
+async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
+    const $ = cheerio.load(await ctx.proxiedFetcher(ctx.manga.url));
     const chapters: Chapter[] = [];
     $('ul.chapter_list > li').each((i, li) => {
         const $li = $(li);
@@ -81,7 +103,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     return chapters;
 }
 
-async function getPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
+async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
     const scripts = $('script')
@@ -115,6 +137,7 @@ export const mangaTownScraper: Source = {
     url: baseUrl,
     rank: 19,
     flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: getPages
+    scrapePages: fetchPages
 };

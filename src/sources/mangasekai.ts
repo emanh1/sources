@@ -1,24 +1,42 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { NotFoundError } from '@/utils/errors';
 
 const baseUrl = "https://mangasekai.co";
 
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const mangas: Manga[] = [];
+    const response = await ctx.proxiedFetcher(`${baseUrl}/search/`, {
+        query: {
+            searchTerm: encodeURIComponent(ctx.titleInput).replace(/%20/g, '+')
+        },
+        method: "POST"
+    })
+    const $ = cheerio.load(response);
+    $('.manga-display').each((_, el) => {
+        const container = $(el);
+        const linkEl = container.find('.manga-container > a');
+        const url = linkEl.attr('href');
+        const title = container.find('.manga-name').text().trim();
+        const img = container.find('img').attr('src');
+
+        if (url && title) {
+            mangas.push({
+                title,
+                url: baseUrl + url,
+                coverUrl: img,
+                sourceId: 'mangasekai'
+            });
+        }
+    });
+    return mangas;
+}
+
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const searchUrl = `${baseUrl}/search/${encodeURIComponent(ctx.manga.title)}`;
-    const searchHtml = await ctx.proxiedFetcher(searchUrl);
-    const $search = cheerio.load(searchHtml);
-
-    const firstResult = $search('div.manga-container a').first();
-    const mangaHref = firstResult.attr('href');
-    if (!mangaHref) throw new NotFoundError("No manga found for title: " + ctx.manga.title);
-
-    const mangaUrl = mangaHref.startsWith('http') ? mangaHref : `${baseUrl}${mangaHref}`;
-    const mangaHtml = await ctx.proxiedFetcher(mangaUrl);
+    const mangaHtml = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(mangaHtml);
 
     const chapters: Chapter[] = [];
@@ -74,7 +92,8 @@ export const mangasekaiScraper: Source = {
     url: baseUrl,
     rank: 12,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };
 

@@ -1,26 +1,59 @@
 import * as cheerio from 'cheerio';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
-import type { SourceChaptersOutput, SourcePagesOutput } from './base';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
+import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from './base';
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
-import { toKebabCase } from '@/utils/tocase';
 
 const baseUrl = "https://mangataro.net";
 
-function sanitizeTitleForSlug(title: string): string {
-    const cleaned = title
-        .replace(/['’]/g, '') // remove apostrophes
-        .replace(/[^\w\s-]/g, '') // remove non-word characters except hyphens/spaces
-        .replace(/\s+/g, ' ') // normalize whitespace
-        .trim();
+export type RawMangaResponseItem = {
+    id: string;
+    title: string;
+    slug: string;
+    alt_titles: string[];
+    authors: string[];
+    permalink: string;
+    thumbnail: string;
+    description: string;
+    type: string; // e.g. "Manga", "Manhwa", etc.
+    status: string; // e.g. "Ongoing", "Completed"
+};
 
-    return toKebabCase(cleaned);
+export type RawMangaResponse = RawMangaResponseItem[];
+
+async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
+    const url = `${baseUrl}/wp-json/manga/v1/search`;
+    const response = await ctx.proxiedFetcher(url, {
+        query: {
+            query: ctx.titleInput
+        },
+        method: "POST"
+    })
+    const data: RawMangaResponse = response;
+
+    const mangas: Manga[] = data.map((item) => ({
+        id: item.id,
+        sourceId: 'mangataro',
+        title: item.title,
+        altTitles: item.alt_titles.map((title) => ({ title })),
+        description: item.description,
+        coverUrl: item.thumbnail,
+        author: item.authors,
+        status:
+            item.status.toLowerCase() === 'completed'
+                ? 'completed'
+                : item.status.toLowerCase() === 'ongoing'
+                    ? 'ongoing'
+                    : 'hiatus',
+        url: item.permalink,
+    }));
+
+    return mangas
 }
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
-    const url = `${baseUrl}/manga/${sanitizeTitleForSlug(ctx.manga.title)}`;
-    const response = await ctx.proxiedFetcher(url);
+    const response = await ctx.proxiedFetcher(ctx.manga.url);
     const $ = cheerio.load(response);
 
     const chapters = $('div.chapter-list a').toArray().map((a) => {
@@ -79,7 +112,8 @@ export const mangaTaroScraper: Source = {
     url: baseUrl,
     rank: 9,
     flags: [flags.CORS_ALLOWED],
+    scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
-    scrapePagesofChapter: fetchPages
+    scrapePages: fetchPages
 };
 

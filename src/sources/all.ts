@@ -2,15 +2,15 @@ import type { Source } from "./base";
 import { mangaReadScraper } from "./mangaread";
 import { mangaDexScraper } from "./mangadex";
 import { manhuaBuddyScraper } from "./manhuabuddy";
-import { manganatoScraper } from "./old/manganato";
+// import { manganatoScraper } from "./old/manganato";
 import { fanFoxScraper } from "./fanfox";
 import { readmangaScraper } from "./readmanga";
-import { coffeemangaScraper } from "./old/coffeemanga";
-import { kunmangaScraper } from "./old/kunmanga";
+// import { coffeemangaScraper } from "./old/coffeemanga";
+// import { kunmangaScraper } from "./old/kunmanga";
 import { mangackScraper } from "./mangack";
 import { mangaTaroScraper } from "./mangataro";
 import { novaMangaScraper } from "./novamanga";
-import { readMangaSeriesScraper } from "./old/readmangaseries";
+// import { readMangaSeriesScraper } from "./old/readmangaseries";
 import { mangaparkScraper } from "./mangapark";
 import { mangasekaiScraper } from "./mangasekai";
 import { mangaoiScraper } from "./mangaoi";
@@ -18,21 +18,22 @@ import { zinmangaxScraper } from "./zinmangax";
 import { mangaHereScraper } from "./mangahere";
 import { mangaPandaScraper } from "./mangapanda";
 import { mangaTownScraper } from "./mangatown";
+import { mangaKatanaScraper } from "./mangakatana";
 
 export function gatherAllSources(): Source[] {
     return [
         mangaReadScraper,
         mangaDexScraper,
         manhuaBuddyScraper,
-        manganatoScraper,
+        // manganatoScraper,
         fanFoxScraper,
         readmangaScraper,
-        coffeemangaScraper,
-        kunmangaScraper,
+        // coffeemangaScraper,
+        // kunmangaScraper,
         mangackScraper,
         mangaTaroScraper,
         novaMangaScraper,
-        readMangaSeriesScraper,
+        // readMangaSeriesScraper,
         mangaparkScraper,
         mangasekaiScraper,
         mangaoiScraper,

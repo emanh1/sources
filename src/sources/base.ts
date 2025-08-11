@@ -1,7 +1,8 @@
 import type { Flags } from '@/entrypoint/targets';
-import type { Chapter, Page } from '@/utils/types';
-import type { MangaContext, ChapterContext } from '@/utils/context';
+import type { Chapter, Manga, Page } from '@/utils/types';
+import type { MangaContext, ChapterContext, SearchContext } from '@/utils/context';
 
+export type SourceMangasOutput = Manga[];
 export type SourceChaptersOutput = Chapter[];
 export type SourcePagesOutput = Page[];
 
@@ -12,6 +13,7 @@ export type Source = {
     rank: number,
     disabled?: boolean,
     flags: Flags[],
+    scrapeMangas: (input: SearchContext) => Promise<SourceMangasOutput>
     scrapeChapters: (input: MangaContext) => Promise<SourceChaptersOutput>,
-    scrapePagesofChapter: (input: ChapterContext) => Promise<SourcePagesOutput>
+    scrapePages: (input: ChapterContext) => Promise<SourcePagesOutput>
 }
