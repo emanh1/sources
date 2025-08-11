@@ -59,6 +59,7 @@ function renderMangas(mangas: Manga[]) {
 }
 
 function renderChapters(chapters: Chapter[]) {
+  console.log(chapters);
   return `<ul>
         ${chapters.map((ch, i) =>
     `<li><a href="#" data-chapter-idx="${i}">Ch. ${ch.chapterNumber || i + 1}</a></li>`

@@ -40,6 +40,7 @@ export function gatherAllSources(): Source[] {
         zinmangaxScraper,
         mangaHereScraper,
         mangaPandaScraper,
-        mangaTownScraper
+        mangaTownScraper,
+        mangaKatanaScraper
     ].sort((a,b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
