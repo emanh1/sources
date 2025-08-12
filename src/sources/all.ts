@@ -22,6 +22,7 @@ import { mangaKatanaScraper } from "./mangakatana";
 import { comicKScraper } from "./comick";
 import { weebCentralScraper } from "./weebcentral";
 import { mangaHavenScraper } from "./mangahaven";
+import { mangaReaderScraper } from "./mangareader";
 
 export function gatherAllSources(): Source[] {
     return [
@@ -47,6 +48,7 @@ export function gatherAllSources(): Source[] {
         mangaKatanaScraper,
         comicKScraper,
         weebCentralScraper,
-        mangaHavenScraper
+        mangaHavenScraper,
+        mangaReaderScraper
     ].sort((a,b) => (a.rank ?? 0) - (b.rank ?? 0));
 }
