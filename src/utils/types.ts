@@ -1,9 +1,10 @@
 export type Manga = {
-    /** MangaDex ID */
+    /* ID from source */
     id?: string,
+    mangadex_id?: string,
     sourceId: string,
     title: string,
-    altTitles?: {[key: string]: string}[],
+    altTitles?: { [key: string]: string }[],
     description?: string,
     coverUrl?: string,
     author?: string[],
