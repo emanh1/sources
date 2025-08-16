@@ -25,7 +25,7 @@ const baseUrl = "https://mangapark.net";
 async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
     const searchHtml = await ctx.proxiedFetcher(`${baseUrl}/search`, {
         query: {
-            word: encodeURIComponent(ctx.titleInput)
+            word: ctx.titleInput
         }
     });
     const $ = cheerio.load(searchHtml);
@@ -75,7 +75,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         const href = $(el).attr('href')?.trim();
         const title = $(el).text().trim();
 
-        if (!href || !title) return;
+        if (!href || !title || !href.includes("title") || title.includes("Start Reading")) return;
 
         const normalized = title.replace(/\s+/g, ' ').trim();
 
@@ -118,27 +118,53 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const response = await ctx.proxiedFetcher(ctx.chapter.url);
     const $ = cheerio.load(response);
 
+    const id = ctx.chapter.url
+        .replace(/\/$/, '')
+        .split('/')
+        .pop()!
+        .split('-')[0];
+
+    const scriptTag = $(`script:contains("${id}")`).first();
+    if (!scriptTag.length) {
+        return [];
+    }
+
+    let scriptData = scriptTag.text();
+
+    if (scriptData.includes('"comic-')) {
+        scriptData = scriptData.substring(scriptData.lastIndexOf('"comic-'));
+    } else {
+        scriptData = scriptData.substring(scriptData.lastIndexOf('"manga-'));
+    }
+
+    const urlRegex = /"(https?:.+?)"/g;
     const pages: Page[] = [];
 
-    $('img.w-full.h-full').each((i, img) => {
-        const src = $(img).attr('src')?.trim();
-        if (!src) return;
-        if (!src.startsWith("http")) return;
-        pages.push({
-            id: i,
-            url: src,
-        });
-    });
+    let match: RegExpExecArray | null;
+    let index = 0;
+
+    while ((match = urlRegex.exec(scriptData)) !== null) {
+        const url = match[1];
+        if (!url) continue;
+
+        if (/\.(jpe?g|jfif|pjpeg|pjp|png|webp|avif|gif)$/i.test(url)) {
+            pages.push({
+                id: index++,
+                url,
+            });
+        }
+    }
 
     return pages;
 }
+
 
 export const mangaparkScraper: Source = {
     id: 'mangapark',
     name: 'MangaPark',
     url: baseUrl,
     rank: 13,
-    flags: [flags.CORS_ALLOWED, flags.DYNAMIC_RENDER, flags.NEEDS_REFERER_HEADER],
+    flags: [flags.CORS_ALLOWED, flags.NEEDS_REFERER_HEADER],
     scrapeMangas: fetchMangas,
     scrapeChapters: fetchChapters,
     scrapePages: fetchPages
