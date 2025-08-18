@@ -8,6 +8,7 @@ import { NotFoundError } from "@/utils/errors";
 const baseUrl = "https://api.mangadex.org"
 
 type MangaList = components["schemas"]["MangaList"]
+type ChapterResponse = components["schemas"]["ChapterList"]
 type MDChapter = components["schemas"]["Chapter"]
 
 async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
@@ -19,7 +20,7 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
             "order[followedCount]": "desc",
         }
     })
-    if (!search.data) throw new NotFoundError('[MangaDex] can\'t find anything')
+    if (!search.data) throw new NotFoundError(`[MangaDex] No search results for ${ctx.titleInput}`)
     const mangaList: Manga[] = [];
     for (const manga of search?.data) {
         mangaList.push({
@@ -40,12 +41,22 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
 }
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
+    const chapters: Chapter[] = [];
+    let offset = 0;
+    let total = 0;
 
-    const chaptersResponse = await ctx.fetcher(`/manga/${ctx.manga.id}/feed`, {
-        baseUrl
-    });
-    const chapters = chaptersResponse.data
-        .map((ch: MDChapter) => ({
+    do {
+        const chaptersResponse: ChapterResponse = await ctx.fetcher(`/manga/${ctx.manga.id}/feed`, {
+            baseUrl,
+            query: {
+                limit: "60",
+                offset: String(offset),
+            }
+        });
+
+        if (!chaptersResponse.data || !chaptersResponse.total) throw new NotFoundError(`[MangaDex] Can't find chapters for ${ctx.manga.title}`);
+
+        chapters.push(...chaptersResponse.data.map((ch: MDChapter) => ({
             id: ch.id ?? 'no_id',
             sourceId: 'mangadex',
             title: ch.attributes?.title,
@@ -54,10 +65,15 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
             chapterNumber: ch.attributes?.chapter,
             date: ch.attributes?.publishAt,
             url: `${baseUrl}/at-home/server/${ch.id}`,
-        } satisfies Chapter));
-    console.log(chapters);
-    return chapters
+        } satisfies Chapter)));
+
+        total = chaptersResponse.total;
+        offset += 60;
+    } while (offset < total);
+
+    return chapters;
 }
+
 
 async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const res = await ctx.fetcher(ctx.chapter.url);
