@@ -42,34 +42,60 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
 
 async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     const chapters: Chapter[] = [];
+    const limit = 100;
     let offset = 0;
-    let total = 0;
+    let failed = false;
 
-    do {
-        const chaptersResponse: ChapterResponse = await ctx.fetcher(`/manga/${ctx.manga.id}/feed`, {
-            baseUrl,
-            query: {
-                limit: "60",
-                offset: String(offset),
+    async function safeFetch(offset: number, retries = 3, delay = 3500): Promise<ChapterResponse | null> {
+        try {
+            return await ctx.fetcher(`/manga/${ctx.manga.id}/feed`, {
+                baseUrl,
+                query: {
+                    limit: String(limit),
+                    offset: String(offset),
+                    "order[publishAt]": "desc",
+                    includeFuturePublishAt: "0",
+                    includeExternalUrl: "0",
+                    includeEmptyPages: "0",
+                },
+            });
+        } catch (err: any) {
+            if (retries > 0) {
+                console.warn(`[MangaDex] fetch failed at offset=${offset}, retrying... (${3 - retries + 1})`);
+                await new Promise(r => setTimeout(r, delay));
+                return safeFetch(offset, retries - 1, delay * 2);
             }
-        });
+            console.error(`[MangaDex] permanent failure at offset=${offset}`, err);
+            return null; 
+        }
+    }
 
-        if (!chaptersResponse.data || !chaptersResponse.total) throw new NotFoundError(`[MangaDex] Can't find chapters for ${ctx.manga.title}`);
+    while (true) {
+        const resp = await safeFetch(offset);
 
-        chapters.push(...chaptersResponse.data.map((ch: MDChapter) => ({
-            id: ch.id ?? 'no_id',
-            sourceId: 'mangadex',
+        if (!resp || !resp.data || resp.data.length === 0) {
+            if (!resp) failed = true;
+            break;
+        }
+
+        chapters.push(...resp.data.map((ch: MDChapter) => ({
+            id: ch.id ?? "no_id",
+            sourceId: "mangadex",
             title: ch.attributes?.title,
             volume: ch.attributes?.volume,
             translatedLanguage: ch.attributes?.translatedLanguage,
             chapterNumber: ch.attributes?.chapter,
             date: ch.attributes?.publishAt,
             url: `${baseUrl}/at-home/server/${ch.id}`,
-        } satisfies Chapter)));
+        })));
 
-        total = chaptersResponse.total;
-        offset += 60;
-    } while (offset < total);
+        offset += limit;
+        await new Promise(r => setTimeout(r, 500)); //idk 
+    }
+
+    if (failed) {
+        console.warn(`[MangaDex] returning partial results (${chapters.length} chapters)`);
+    }
 
     return chapters;
 }
