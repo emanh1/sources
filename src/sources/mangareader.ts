@@ -60,6 +60,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
                 {
                     id: String(number),
                     title,
+                    chapterNumber: String(number),
                     sourceId: 'mangareader',
                     url: baseUrl + url,
                     translatedLanguage: lang,

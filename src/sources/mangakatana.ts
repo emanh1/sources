@@ -145,7 +145,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         }
 
         return {
-            id: String(i),
+            id: chapterNumber || 'l' + String(i),
             sourceId: 'mangakatana',
             title: fullTitle,
             chapterNumber: chapterNumber || String(i),

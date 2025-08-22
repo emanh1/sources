@@ -55,7 +55,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
         }
 
         chapters.push({
-            id: String(i),
+            id: chapterNumber ?? 'l' + String(i),
             sourceId: 'mangasekai',
             title: title,
             chapterNumber: chapterNumber ?? String(i),
