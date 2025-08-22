@@ -28,12 +28,17 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
     const response: SearchResponse = await ctx.proxiedFetcher(`${baseUrl}/wp-admin/admin-ajax.php`, {
         body: formData,
         method: "POST",
+        headers: {
+            "accept-language": "en-US,en;q=0.5",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0", //for nodejs servers
+
+        }
         // headers: {
         //     "X-Origin": baseUrl,
         //     "X-Referer": `${baseUrl}/?s=${encodeURIComponent(ctx.titleInput).replace(/%20/g, '+')}&post_type=wp-manga`
         // }
     })
-    if (!response.success) throw new NotFoundError(`[MangaRead] error while connecting to api`);
+    if (!response.success) throw new NotFoundError(`[MangaRead] error while connecting to api, :${response}`);
     for (const item of response.data) {
         mangas.push({
             title: item.title,
