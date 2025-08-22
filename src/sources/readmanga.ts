@@ -112,16 +112,17 @@ async function fetchPages(ctx: ChapterContext): Promise<SourcePagesOutput> {
     const $ = cheerio.load(response);
     const pages: Page[] = [];
 
-    $('div.flex img').each((index, img) => {
-        const $img = $(img);
-        const src = $img.attr('src')?.trim();
-        if (!src) return;
+    $('div.mx-auto.mb-4.flex.w-full.flex-col.justify-center.md\\:max-w-4xl img')
+        .each((index, img) => {
+            const $img = $(img);
+            const src = $img.attr('src')?.trim();
+            if (!src) return;
 
-        pages.push({
-            id: index,
-            url: src,
+            pages.push({
+                id: index,
+                url: src,
+            });
         });
-    });
 
     return pages;
 }
