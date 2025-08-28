@@ -33,7 +33,7 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
             status: manga.attributes?.status,
             year: manga.attributes?.year,
             originalLanguage: manga.attributes?.originalLanguage,
-            url: `https://mangadex.org/title/${manga.id}`
+            url: baseUrl + `/manga/${manga.id}/feed`
         })
     }
     return mangaList
@@ -48,7 +48,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
 
     async function safeFetch(offset: number, retries = 3, delay = 3500): Promise<ChapterResponse | null> {
         try {
-            return await ctx.fetcher(`/manga/${ctx.manga.id}/feed`, {
+            return await ctx.fetcher(ctx.manga.url, {
                 baseUrl,
                 query: {
                     limit: String(limit),
