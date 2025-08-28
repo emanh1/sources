@@ -93,7 +93,7 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
             coverUrl: manga.md_covers[0] ? `https://meo.comick.pictures/${manga.md_covers[0].b2key}.jpg` : undefined,
             year: manga.year,
             originalLanguage: manga.country,
-            url: baseUrl + `/comic/${manga.slug}`
+            url: `${apiUrl}/comic/${manga.id}/chapters`
         })
     }
     return mangas;
@@ -105,7 +105,7 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     let chaptersResponse: ChaptersResponse;
 
     do {
-        chaptersResponse = await ctx.fetcher(`${apiUrl}/comic/${ctx.manga.id}/chapters`, {
+        chaptersResponse = await ctx.fetcher(ctx.manga.url, {
             query: {
                 tachiyomi: 'true',
                 page: String(page),
