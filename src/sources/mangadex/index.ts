@@ -49,7 +49,6 @@ async function fetchChapters(ctx: MangaContext): Promise<SourceChaptersOutput> {
     async function safeFetch(offset: number, retries = 3, delay = 3500): Promise<ChapterResponse | null> {
         try {
             return await ctx.fetcher(ctx.manga.url, {
-                baseUrl,
                 query: {
                     limit: String(limit),
                     offset: String(offset),
