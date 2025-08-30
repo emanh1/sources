@@ -5,7 +5,7 @@ import type { SourceChaptersOutput, SourceMangasOutput, SourcePagesOutput } from
 import type { Source } from '@/sources/base';
 import { flags } from '@/entrypoint/targets';
 
-const baseUrl = "https://mangataro.net";
+const baseUrl = "https://mangataro.org";
 
 export type RawMangaResponseItem = {
     id: string;
