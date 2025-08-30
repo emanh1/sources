@@ -93,7 +93,7 @@ async function fetchMangas(ctx: SearchContext): Promise<SourceMangasOutput> {
             coverUrl: manga.md_covers[0] ? `https://meo.comick.pictures/${manga.md_covers[0].b2key}.jpg` : undefined,
             year: manga.year,
             originalLanguage: manga.country,
-            url: `${apiUrl}/comic/${manga.id}/chapters`
+            url: `${apiUrl}/comic/${manga.hid}/chapters`
         })
     }
     return mangas;
